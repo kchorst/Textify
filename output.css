@@ -1,0 +1,262 @@
+/* output.css — Textify output tab styles */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: monospace;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Top bar ── */
+#topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #0d0d0d;
+  border-bottom: 1px solid #1e1e1e;
+  height: 44px;
+}
+
+#logo {
+  font-size: 15px;
+  font-weight: bold;
+  color: #00ffcc;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}
+
+#mode-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.mode-btn {
+  background: #1a1a1a;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-family: monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.mode-btn:hover:not(:disabled) {
+  background: #222;
+  color: #ccc;
+  border-color: #555;
+}
+
+.mode-btn.active {
+  background: #00ffcc1a;
+  color: #00ffcc;
+  border-color: #00ffcc55;
+}
+
+.mode-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Render area ── */
+#render-wrap {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: #000;
+}
+
+#ascii-output {
+  display: block;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1em;
+  background: #000;
+  color: #fff;
+  white-space: pre;
+  padding: 4px;
+  min-height: 100%;
+}
+
+/* ── Spinner ── */
+#spinner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+#spinner-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#spinner-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #222;
+  border-top-color: #00ffcc;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Controls panel ── */
+#controls {
+  flex-shrink: 0;
+  background: #0d0d0d;
+  border-top: 1px solid #1e1e1e;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-row label {
+  font-size: 12px;
+  color: #888;
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.control-row input[type="range"] {
+  flex: 1;
+  accent-color: #00ffcc;
+  cursor: pointer;
+}
+
+.control-val {
+  font-size: 12px;
+  color: #aaa;
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Button row ── */
+#save-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* Three zones */
+.btn-zone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-zone--left {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.btn-zone--centre {
+  flex: 0 0 auto;
+  justify-content: center;
+}
+
+.btn-zone--right {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Shared button styles */
+#save-row button {
+  background: #1a1a1a;
+  color: #ccc;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-family: monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+
+#save-row button:hover:not(:disabled) {
+  background: #252525;
+  color: #fff;
+  border-color: #555;
+}
+
+#save-row button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Invert — hidden via visibility so space is preserved */
+#btn-invert {
+  color: #888;
+  visibility: visible;
+}
+#btn-invert.active {
+  background: #ff6b6b1a;
+  color: #ff6b6b;
+  border-color: #ff6b6b55;
+}
+#btn-invert:hover:not(:disabled) {
+  color: #ff6b6b !important;
+  border-color: #ff6b6b55 !important;
+}
+#btn-invert.bw-only-hidden {
+  visibility: hidden;
+}
+
+/* Reset button */
+#btn-reset:hover:not(:disabled) {
+  color: #ffdd57;
+  border-color: #ffdd5755;
+}
+
+/* BG toggle */
+#btn-bg:hover:not(:disabled) {
+  color: #aaa;
+  border-color: #aaa55;
+}
+#btn-bg.active {
+  background: #ffffff1a;
+  color: #ffffff;
+  border-color: #ffffff55;
+}
+
+#btn-copy:hover:not(:disabled) {
+  color: #00ffcc;
+  border-color: #00ffcc55;
+}
+
+#btn-png:hover:not(:disabled) {
+  color: #a78bfa;
+  border-color: #a78bfa55;
+}

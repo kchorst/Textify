@@ -1,0 +1,76 @@
+/* content.css — Textify overlay styles */
+
+.textify-overlay {
+  position: absolute;
+  z-index: 2147483647;
+  cursor: pointer;
+  box-sizing: border-box;
+  border: 7px solid transparent;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.textify-overlay:hover {
+  border-color: #00ffcc;
+  box-shadow: 0 0 0 4px rgba(0, 255, 204, 0.45), inset 0 0 60px rgba(0, 255, 204, 0.14);
+}
+
+.textify-overlay-label {
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.82);
+  color: #00ffcc;
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 2px solid rgba(0, 255, 204, 0.6);
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+  text-shadow: 0 0 12px rgba(0, 255, 204, 0.9);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+}
+
+.textify-overlay:hover .textify-overlay-label {
+  opacity: 1;
+}
+
+.textify-overlay.textify-loading .textify-overlay-label {
+  opacity: 1;
+  color: #ffdd57;
+  border-color: rgba(255, 221, 87, 0.6);
+  text-shadow: 0 0 12px rgba(255, 221, 87, 0.9);
+}
+
+/* Toast notification */
+#textify-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20, 20, 20, 0.92);
+  color: #ff6b6b;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  z-index: 2147483647;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+#textify-toast.textify-toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

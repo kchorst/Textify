@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Textify</title>
+  <link rel="stylesheet" href="output.css" />
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div id="topbar">
+    <span id="logo">✦ Textify</span>
+    <div id="mode-toggle">
+      <button class="mode-btn active" data-mode="bw">BW</button>
+      <button class="mode-btn" data-mode="color-ascii">Color ASCII</button>
+      <button class="mode-btn" data-mode="color-block">Color Block</button>
+    </div>
+  </div>
+
+  <!-- ASCII render area -->
+  <div id="render-wrap">
+    <div id="spinner-overlay">
+      <div id="spinner-ring"></div>
+    </div>
+    <pre id="ascii-output"></pre>
+  </div>
+
+  <!-- Controls panel -->
+  <div id="controls">
+    <div class="control-row">
+      <label for="font-size-slider">Font Size</label>
+      <input type="range" id="font-size-slider" min="8" max="24" step="1" value="12" />
+      <span class="control-val" id="font-size-val">12px</span>
+    </div>
+    <div class="control-row">
+      <label for="width-slider">Width</label>
+      <input type="range" id="width-slider" min="10" max="100" step="5" value="100" />
+      <span class="control-val" id="width-val">100%</span>
+    </div>
+    <div class="control-row">
+      <label for="contrast-slider">Contrast</label>
+      <input type="range" id="contrast-slider" min="0.5" max="3.0" step="0.1" value="1.0" />
+      <span class="control-val" id="contrast-val">1.0</span>
+    </div>
+
+    <div id="save-row">
+      <!-- Left zone -->
+      <div class="btn-zone btn-zone--left">
+        <button id="btn-reset" title="Reset all controls to defaults">Reset</button>
+      </div>
+
+      <!-- Centre zone -->
+      <div class="btn-zone btn-zone--centre">
+        <button id="btn-invert" title="Invert BW tones">Invert</button>
+        <button id="btn-bg" title="Toggle background colour">BG: Black</button>
+      </div>
+
+      <!-- Right zone -->
+      <div class="btn-zone btn-zone--right">
+        <button id="btn-copy">Copy</button>
+        <button id="btn-txt">Save .txt</button>
+        <button id="btn-html">Save .html</button>
+        <button id="btn-png">Save .png</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="output.js"></script>
+</body>
+</html>
