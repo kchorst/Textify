@@ -2,6 +2,15 @@
 
 Textify is a browser extension that allows you to convert images from any webpage into ASCII art directly in your browser.
 
+## ⚖️ License: Non-Commercial Use Only
+
+This repository contains source-available code and utilities strictly governed by the **PolyForm Noncommercial License 1.0.0**.
+
+* **Allowed:** Free for personal experimentation, individual learning, testing, and academic research.
+* **Prohibited:** Commercial use, corporate deployment, resale, or monetization of this software in a business environment is strictly forbidden.
+
+For the full binding legal text, please see the accompanying [LICENSE.md](LICENSE.md) file.
+
 ## Features
 * **Multiple Rendering Modes:**
     * **BW:** Traditional black and white ASCII art.
