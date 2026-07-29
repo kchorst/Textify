@@ -66,6 +66,17 @@ html, body {
   border-color: #00ffcc55;
 }
 
+.mode-btn[data-mode="glitch"].active {
+  background: linear-gradient(90deg, #ff00001a 50%, #00ffff1a 50%);
+  color: #ff00ff;
+  border-color: #ff00ff55;
+}
+
+.mode-btn[data-mode="glitch"]:hover:not(:disabled) {
+  color: #ff00ff;
+  border-color: #ff00ff55;
+}
+
 .mode-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -161,6 +172,14 @@ html, body {
   flex-shrink: 0;
 }
 
+.glitch-only {
+  display: none;
+}
+
+body[data-mode="glitch"] .glitch-only {
+  display: flex;
+}
+
 /* ── Button row ── */
 #save-row {
   display: flex;
@@ -243,7 +262,7 @@ html, body {
 /* BG toggle */
 #btn-bg:hover:not(:disabled) {
   color: #aaa;
-  border-color: #aaa55;
+  border-color: #aaa555;
 }
 #btn-bg.active {
   background: #ffffff1a;

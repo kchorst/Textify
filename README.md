@@ -2,12 +2,22 @@
 
 Textify is a browser extension that allows you to convert images from any webpage into ASCII art directly in your browser.
 
+## Latest Update: Glitch Mode
+**NEW:** Added Glitch mode - a red/cyan block-based rendering effect inspired by analog glitch art. This mode creates striking visual distortions using alternating colored blocks that vary in height based on image brightness.
+
+**Glitch Mode Tips:**
+- **Best Subjects:** Close-up portraits and face-only shots with minimal backgrounds work best for glitch mode
+- **Adjustments:** You may need to fine-tune font size, width, contrast, and spacer rows for optimal results
+- **Spacer Rows:** Use the Spacer Rows slider (0-5) to control vertical spacing between colored rows
+- **Note:** While close-ups work best for all ASCII modes, glitch mode particularly benefits from high-contrast, simple compositions
+
 ## Features
 * **Multiple Rendering Modes:**
     * **BW:** Traditional black and white ASCII art.
     * **Color ASCII:** Colored characters based on the source image pixels.
     * **Color Block:** A block-based representation that retains image color and density.
-* **Customization:** Adjust font size, width, contrast, and toggle between light/dark backgrounds.
+    * **Glitch:** Red/cyan block-based rendering with variable heights and alternating colors for a glitched aesthetic.
+* **Customization:** Adjust font size, width, contrast, and toggle between light/dark backgrounds. Glitch mode includes additional spacer row control.
 * **Export Options:** * Copy the result to your clipboard.
     * Save as a `.txt` file (BW mode only).
     * Save as a standalone `.html` file.

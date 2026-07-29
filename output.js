@@ -12,7 +12,9 @@ const DEFAULTS = {
   width:      100,
   contrast:   1.0,
   invert:     true,
-  bgWhite:    false
+  bgWhite:    false,
+  spacerRows: 1,
+  invertBrightness: true
 };
 
 // ── State ──
@@ -25,6 +27,8 @@ let currentWidth    = DEFAULTS.width;
 let currentContrast = DEFAULTS.contrast;
 let currentInvert   = DEFAULTS.invert;
 let currentBgWhite  = DEFAULTS.bgWhite;
+let currentSpacerRows = DEFAULTS.spacerRows;
+let currentInvertBrightness = DEFAULTS.invertBrightness;
 let debounceTimer   = null;
 
 // ── DOM refs ──
@@ -34,9 +38,11 @@ const modeBtns       = document.querySelectorAll('.mode-btn');
 const fontSlider     = document.getElementById('font-size-slider');
 const widthSlider    = document.getElementById('width-slider');
 const contrastSlider = document.getElementById('contrast-slider');
+const spacerSlider   = document.getElementById('spacer-slider');
 const fontVal        = document.getElementById('font-size-val');
 const widthVal       = document.getElementById('width-val');
 const contrastVal    = document.getElementById('contrast-val');
+const spacerVal      = document.getElementById('spacer-val');
 const btnInvert      = document.getElementById('btn-invert');
 const btnBg          = document.getElementById('btn-bg');
 const btnReset       = document.getElementById('btn-reset');
@@ -119,11 +125,20 @@ function doRender() {
   const cols = Math.max(10, Math.floor(effectiveWidth / charW));
   const rows = Math.max(1,  Math.floor(cols * (imgHeight / imgWidth) * aspectCorrection));
 
+  // Reset pre styles for non-glitch modes
+  pre.style.width = '';
+  pre.style.height = '';
+  pre.style.display = '';
+  pre.style.flexDirection = '';
+  pre.style.margin = '';
+  pre.style.padding = '';
+  pre.style.overflow = '';
   pre.style.fontSize = currentFontSize + 'px';
 
   if      (currentMode === 'bw')          renderBW(cols, rows);
   else if (currentMode === 'color-ascii') renderColorASCII(cols, rows);
-  else                                    renderColorBlock(cols, rows);
+  else if (currentMode === 'color-block') renderColorBlock(cols, rows);
+  else                                    renderGlitch(cols, rows);
 }
 
 // ── Averaged 2×2 pixel sampler ──
@@ -210,6 +225,79 @@ function renderColorBlock(cols, rows) {
   pre.innerHTML = parts.join('');
 }
 
+// ── Mode 4: Glitch — red/cyan horizontal bars of varying size ──
+function renderGlitch(cols, rows) {
+  const parts = [];
+  
+  // Use fixed number of blocks per row at full width
+  const glitchCols = 60; // ~60 blocks per row to match reference
+  const glitchRows = rows; // Use original row count to preserve vertical dimensions
+  
+  // Calculate dimensions to preserve original size
+  const totalWidth = cols * currentFontSize;
+  const totalHeight = rows * currentFontSize;
+  const blockWidth = totalWidth / glitchCols;
+  const rowHeight = currentFontSize; // Each row is exactly one font-size tall
+  
+  // Set container dimensions for glitch mode only
+  pre.style.width = totalWidth + 'px';
+  pre.style.height = totalHeight + 'px';
+  pre.style.display = 'flex';
+  pre.style.flexDirection = 'column';
+  pre.style.margin = '0';
+  pre.style.padding = '0';
+  pre.style.overflow = 'hidden';
+  
+  for (let row = 0; row < glitchRows; row++) {
+    // Add spacer rows before each content row (except first)
+    if (row > 0 && currentSpacerRows > 0) {
+      for (let s = 0; s < currentSpacerRows; s++) {
+        parts.push(`<div style="width:100%;height:${rowHeight}px;background:#000000;margin:0;padding:0;flex-shrink:0;"></div>`);
+      }
+    }
+    
+    // Build row with flexbox for touching blocks, consistent height
+    let rowHtml = `<div style="display:flex;width:100%;height:${rowHeight}px;margin:0;padding:0;flex-shrink:0;align-items:center;">`;
+    
+    for (let col = 0; col < glitchCols; col++) {
+      // Map glitch coordinates to original image coordinates
+      const srcCol = Math.floor(col * cols / glitchCols);
+      const srcRow = Math.floor(row * rows / glitchRows);
+      
+      const { r, g, b } = samplePixel(srcCol, srcRow, cols, rows);
+      
+      // NO negative conversion - use original colors
+      const brightness = (r + g + b) / 3;
+      
+      // Apply contrast transformation
+      let L = brightness / 255;
+      L = Math.pow(L, 1 / currentContrast);
+      if (currentInvert) L = 1 - L;
+      
+      // Apply power function for more extreme contrast
+      L = Math.pow(L, 2); // Push values toward extremes
+      
+      // Invert brightness mapping - bright should be full block, dark should be sliver
+      L = 1 - L;
+      
+      // Map brightness to block height - dark = sliver, bright = full block
+      const blockHeight = rowHeight * (0.05 + (L * 0.95));
+      
+      // Block-based color alternation: red, cyan, red, cyan...
+      const isRed = col % 2 === 0;
+      const color = isRed ? '#ff0000' : '#00ffff';
+      
+      // Use div with flexbox for touching blocks, variable height centered vertically
+      rowHtml += `<div style="background:${color};width:${blockWidth}px;height:${blockHeight}px;margin:0;padding:0;flex-shrink:0;"></div>`;
+    }
+    
+    rowHtml += '</div>';
+    parts.push(rowHtml);
+  }
+  
+  pre.innerHTML = parts.join('');
+}
+
 function escapeHtml(ch) {
   if (ch === '&') return '&amp;';
   if (ch === '<') return '&lt;';
@@ -234,6 +322,8 @@ function saveSettings() {
       contrast:  currentContrast,
       invert:    currentInvert,
       bgWhite:   currentBgWhite,
+      spacerRows: currentSpacerRows,
+      invertBrightness: currentInvertBrightness,
       mode:      currentMode
     }
   });
@@ -249,6 +339,8 @@ function loadSettings() {
         currentContrast = s.contrast  ?? DEFAULTS.contrast;
         currentInvert   = s.invert    ?? DEFAULTS.invert;
         currentBgWhite  = s.bgWhite   ?? DEFAULTS.bgWhite;
+        currentSpacerRows = s.spacerRows ?? DEFAULTS.spacerRows;
+        currentInvertBrightness = s.invertBrightness ?? DEFAULTS.invertBrightness;
         currentMode     = s.mode      ?? 'bw';
       }
       resolve();
@@ -260,14 +352,19 @@ function syncUI() {
   fontSlider.value     = currentFontSize;
   widthSlider.value    = currentWidth;
   contrastSlider.value = currentContrast;
+  spacerSlider.value   = currentSpacerRows;
 
   fontVal.textContent     = currentFontSize + 'px';
   widthVal.textContent    = currentWidth + '%';
   contrastVal.textContent = currentContrast.toFixed(1);
+  spacerVal.textContent   = currentSpacerRows;
 
   btnInvert.classList.toggle('active', currentInvert);
 
   modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
+  
+  // Set body data-mode for CSS
+  document.body.dataset.mode = currentMode;
 
   applyBg();
 }
@@ -279,6 +376,7 @@ modeBtns.forEach(btn => {
     currentMode = btn.dataset.mode;
     modeBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    document.body.dataset.mode = currentMode;
     saveSettings();
     render();
   });
@@ -306,6 +404,8 @@ btnReset.addEventListener('click', () => {
   currentContrast = DEFAULTS.contrast;
   currentInvert   = DEFAULTS.invert;
   currentBgWhite  = DEFAULTS.bgWhite;
+  currentSpacerRows = DEFAULTS.spacerRows;
+  currentInvertBrightness = DEFAULTS.invertBrightness;
   currentMode     = 'bw';
   syncUI();
   saveSettings();
@@ -328,6 +428,12 @@ widthSlider.addEventListener('input', () => {
 contrastSlider.addEventListener('input', () => {
   currentContrast = parseFloat(contrastSlider.value);
   contrastVal.textContent = currentContrast.toFixed(1);
+  scheduleRender();
+});
+
+spacerSlider.addEventListener('input', () => {
+  currentSpacerRows = parseInt(spacerSlider.value, 10);
+  spacerVal.textContent = currentSpacerRows;
   scheduleRender();
 });
 
