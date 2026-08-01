@@ -14,7 +14,8 @@ const DEFAULTS = {
   invert:     true,
   bgWhite:    false,
   spacerRows: 1,
-  invertBrightness: true
+  invertBrightness: true,
+  zoom:       100
 };
 
 // ── State ──
@@ -29,6 +30,7 @@ let currentInvert   = DEFAULTS.invert;
 let currentBgWhite  = DEFAULTS.bgWhite;
 let currentSpacerRows = DEFAULTS.spacerRows;
 let currentInvertBrightness = DEFAULTS.invertBrightness;
+let currentZoom     = DEFAULTS.zoom;
 let debounceTimer   = null;
 
 // ── DOM refs ──
@@ -39,10 +41,12 @@ const fontSlider     = document.getElementById('font-size-slider');
 const widthSlider    = document.getElementById('width-slider');
 const contrastSlider = document.getElementById('contrast-slider');
 const spacerSlider   = document.getElementById('spacer-slider');
+const zoomSlider     = document.getElementById('zoom-slider');
 const fontVal        = document.getElementById('font-size-val');
 const widthVal       = document.getElementById('width-val');
 const contrastVal    = document.getElementById('contrast-val');
 const spacerVal      = document.getElementById('spacer-val');
+const zoomVal        = document.getElementById('zoom-val');
 const btnInvert      = document.getElementById('btn-invert');
 const btnBg          = document.getElementById('btn-bg');
 const btnReset       = document.getElementById('btn-reset');
@@ -133,6 +137,8 @@ function doRender() {
   pre.style.margin = '';
   pre.style.padding = '';
   pre.style.overflow = '';
+  pre.style.transform = '';
+  pre.style.transformOrigin = '';
   pre.style.fontSize = currentFontSize + 'px';
 
   if      (currentMode === 'bw')          renderBW(cols, rows);
@@ -235,9 +241,11 @@ function renderGlitch(cols, rows) {
   
   // Calculate dimensions to preserve original size
   const totalWidth = cols * currentFontSize;
-  const totalHeight = rows * currentFontSize;
-  const blockWidth = totalWidth / glitchCols;
   const rowHeight = currentFontSize; // Each row is exactly one font-size tall
+  // Account for spacer rows in total height
+  const spacerHeight = glitchRows * currentSpacerRows * rowHeight;
+  const totalHeight = (rows * rowHeight) + spacerHeight;
+  const blockWidth = totalWidth / glitchCols;
   
   // Set container dimensions for glitch mode only
   pre.style.width = totalWidth + 'px';
@@ -247,6 +255,8 @@ function renderGlitch(cols, rows) {
   pre.style.margin = '0';
   pre.style.padding = '0';
   pre.style.overflow = 'hidden';
+  pre.style.transform = `scale(${currentZoom / 100})`;
+  pre.style.transformOrigin = 'top left';
   
   for (let row = 0; row < glitchRows; row++) {
     // Add spacer rows before each content row (except first)
@@ -324,6 +334,7 @@ function saveSettings() {
       bgWhite:   currentBgWhite,
       spacerRows: currentSpacerRows,
       invertBrightness: currentInvertBrightness,
+      zoom:      currentZoom,
       mode:      currentMode
     }
   });
@@ -341,6 +352,7 @@ function loadSettings() {
         currentBgWhite  = s.bgWhite   ?? DEFAULTS.bgWhite;
         currentSpacerRows = s.spacerRows ?? DEFAULTS.spacerRows;
         currentInvertBrightness = s.invertBrightness ?? DEFAULTS.invertBrightness;
+        currentZoom     = s.zoom      ?? DEFAULTS.zoom;
         currentMode     = s.mode      ?? 'bw';
       }
       resolve();
@@ -353,11 +365,13 @@ function syncUI() {
   widthSlider.value    = currentWidth;
   contrastSlider.value = currentContrast;
   spacerSlider.value   = currentSpacerRows;
+  zoomSlider.value     = currentZoom;
 
   fontVal.textContent     = currentFontSize + 'px';
   widthVal.textContent    = currentWidth + '%';
   contrastVal.textContent = currentContrast.toFixed(1);
   spacerVal.textContent   = currentSpacerRows;
+  zoomVal.textContent     = currentZoom + '%';
 
   btnInvert.classList.toggle('active', currentInvert);
 
@@ -367,6 +381,7 @@ function syncUI() {
   document.body.dataset.mode = currentMode;
 
   applyBg();
+  applyZoom();
 }
 
 // ── Mode toggle ──
@@ -377,6 +392,7 @@ modeBtns.forEach(btn => {
     modeBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.body.dataset.mode = currentMode;
+    applyZoom();
     saveSettings();
     render();
   });
@@ -406,6 +422,7 @@ btnReset.addEventListener('click', () => {
   currentBgWhite  = DEFAULTS.bgWhite;
   currentSpacerRows = DEFAULTS.spacerRows;
   currentInvertBrightness = DEFAULTS.invertBrightness;
+  currentZoom     = DEFAULTS.zoom;
   currentMode     = 'bw';
   syncUI();
   saveSettings();
@@ -437,6 +454,22 @@ spacerSlider.addEventListener('input', () => {
   scheduleRender();
 });
 
+zoomSlider.addEventListener('input', () => {
+  currentZoom = parseInt(zoomSlider.value, 10);
+  zoomVal.textContent = currentZoom + '%';
+  applyZoom();
+  scheduleRender();
+});
+
+function applyZoom() {
+  if (currentMode === 'glitch') {
+    pre.style.transform = `scale(${currentZoom / 100})`;
+    pre.style.transformOrigin = 'top left';
+  } else {
+    pre.style.transform = '';
+  }
+}
+
 function scheduleRender() {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => { saveSettings(); render(); }, 300);
@@ -459,17 +492,42 @@ btnTxt.addEventListener('click', () => {
 btnHtml.addEventListener('click', () => {
   const bg = currentBgWhite ? '#ffffff' : '#000000';
   const fg = currentBgWhite ? '#000000' : '#ffffff';
+  
+  let css, content;
+  if (currentMode === 'glitch') {
+    // Glitch mode needs specific CSS for flexbox layout
+    css = `
+  body { margin: 0; background: #000000; }
+  pre { 
+    font-family: monospace; 
+    font-size: ${currentFontSize}px; 
+    line-height: 1em; 
+    background: #000000; 
+    color: #ffffff; 
+    white-space: pre; 
+    padding: 0; 
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }`;
+    content = pre.innerHTML;
+  } else {
+    css = `
+  body { margin: 0; background: ${bg}; }
+  pre { font-family: monospace; font-size: ${currentFontSize}px; line-height: 1em; background: ${bg}; color: ${fg}; white-space: pre; padding: 4px; }`;
+    content = pre.innerHTML;
+  }
+  
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <title>Textify</title>
-<style>
-  body { margin: 0; background: ${bg}; }
-  pre { font-family: monospace; font-size: ${currentFontSize}px; line-height: 1em; background: ${bg}; color: ${fg}; white-space: pre; padding: 4px; }
+<style>${css}
 </style>
 </head>
-<body><pre>${pre.innerHTML}</pre>
+<body><pre>${content}</pre>
 </body></html>`;
   triggerDownload(new Blob([html], { type: 'text/html' }), 'textify.html');
 });
@@ -488,30 +546,83 @@ function savePNG() {
   const cols = Math.max(10, Math.floor(effectiveWidth / charW));
   const rows = Math.max(1,  Math.floor(cols * (imgHeight / imgWidth) * aspectCorrection));
 
-  const canvas = document.createElement('canvas');
-  canvas.width  = cols * charW;
-  canvas.height = rows * charH;
-  const ctx = canvas.getContext('2d');
+  // Glitch mode uses different dimensions
+  let canvas, ctx;
+  if (currentMode === 'glitch') {
+    const glitchCols = 60;
+    const glitchRows = rows;
+    const totalWidth = cols * currentFontSize;
+    const rowHeight = currentFontSize;
+    const spacerHeight = glitchRows * currentSpacerRows * rowHeight;
+    const totalHeight = (rows * rowHeight) + spacerHeight;
+    const blockWidth = totalWidth / glitchCols;
 
-  ctx.fillStyle = currentBgWhite ? '#ffffff' : '#000000';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.font = `${currentFontSize}px monospace`;
-  ctx.textBaseline = 'top';
+    canvas = document.createElement('canvas');
+    canvas.width = totalWidth;
+    canvas.height = totalHeight;
+    ctx = canvas.getContext('2d');
 
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const { r, g, b } = samplePixel(col, row, cols, rows);
-      let ch;
-      if (currentMode === 'color-block') {
-        ch = pixelToBlock(r, g, b);
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-      } else {
-        ch = pixelToChar(r, g, b);
-        ctx.fillStyle = currentMode === 'bw'
-          ? (currentBgWhite ? '#000000' : '#ffffff')
-          : `rgb(${r},${g},${b})`;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    let currentY = 0;
+    for (let row = 0; row < glitchRows; row++) {
+      // Add spacer rows
+      if (row > 0 && currentSpacerRows > 0) {
+        for (let s = 0; s < currentSpacerRows; s++) {
+          currentY += rowHeight;
+        }
       }
-      ctx.fillText(ch, col * charW, row * charH);
+
+      for (let col = 0; col < glitchCols; col++) {
+        const srcCol = Math.floor(col * cols / glitchCols);
+        const srcRow = Math.floor(row * rows / glitchRows);
+        const { r, g, b } = samplePixel(srcCol, srcRow, cols, rows);
+
+        const brightness = (r + g + b) / 3;
+        let L = brightness / 255;
+        L = Math.pow(L, 1 / currentContrast);
+        if (currentInvert) L = 1 - L;
+        L = Math.pow(L, 2);
+        L = 1 - L;
+        const blockHeight = rowHeight * (0.05 + (L * 0.95));
+
+        const isRed = col % 2 === 0;
+        const color = isRed ? '#ff0000' : '#00ffff';
+
+        ctx.fillStyle = color;
+        const blockY = currentY + (rowHeight - blockHeight) / 2;
+        ctx.fillRect(col * blockWidth, blockY, blockWidth, blockHeight);
+      }
+
+      currentY += rowHeight;
+    }
+  } else {
+    canvas = document.createElement('canvas');
+    canvas.width  = cols * charW;
+    canvas.height = rows * charH;
+    ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = currentBgWhite ? '#ffffff' : '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `${currentFontSize}px monospace`;
+    ctx.textBaseline = 'top';
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const { r, g, b } = samplePixel(col, row, cols, rows);
+        let ch;
+        if (currentMode === 'color-block') {
+          ch = '█'; // Always use full block, matching visual rendering
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+        } else {
+          ch = pixelToChar(r, g, b);
+          ctx.fillStyle = currentMode === 'bw'
+            ? (currentBgWhite ? '#000000' : '#ffffff')
+            : `rgb(${r},${g},${b})`;
+        }
+        ctx.fillText(ch, col * charW, row * charH);
+      }
     }
   }
 

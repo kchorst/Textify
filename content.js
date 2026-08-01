@@ -72,6 +72,7 @@
 
   // ── Attach overlays ──
   let overlayContainer = null;
+  let overlaysVisible = true;
 
   function attachOverlays() {
     // Remove any existing overlays first (re-scan)
@@ -93,6 +94,25 @@
       const overlay = buildOverlay(img);
       overlayContainer.appendChild(overlay);
     });
+  }
+
+  function removeOverlays() {
+    if (overlayContainer) {
+      overlayContainer.remove();
+      overlayContainer = null;
+    }
+    showToast('Textify overlays removed');
+  }
+
+  function toggleOverlays() {
+    if (overlaysVisible) {
+      removeOverlays();
+      overlaysVisible = false;
+    } else {
+      attachOverlays();
+      overlaysVisible = true;
+      showToast('Textify overlays enabled');
+    }
   }
 
   // ── Handle click: capture → store → open output ──
@@ -174,6 +194,14 @@
       });
     });
   }
+
+  // ── Message listener for toggle ──
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'toggle_overlays') {
+      toggleOverlays();
+      sendResponse({ ok: true });
+    }
+  });
 
   // ── Init ──
   // If the DOM isn't ready yet, wait for it.

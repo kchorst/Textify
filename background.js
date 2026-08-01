@@ -3,7 +3,7 @@
 // Track injected tabs to handle re-injection gracefully
 const injectedTabs = new Set();
 
-// Toolbar icon click — inject content script into active tab
+// Toolbar icon click — inject content script into active tab or toggle overlays
 chrome.action.onClicked.addListener(async (tab) => {
   if (!tab.id) return;
 
@@ -13,18 +13,23 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 
   try {
-    // If already injected, content.js will handle the re-injection guard itself
-    await chrome.scripting.insertCSS({
-      target: { tabId: tab.id },
-      files: ['content.css']
-    });
+    if (injectedTabs.has(tab.id)) {
+      // Already injected - send toggle message
+      chrome.tabs.sendMessage(tab.id, { action: 'toggle_overlays' });
+    } else {
+      // First time - inject scripts
+      await chrome.scripting.insertCSS({
+        target: { tabId: tab.id },
+        files: ['content.css']
+      });
 
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content.js']
-    });
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content.js']
+      });
 
-    injectedTabs.add(tab.id);
+      injectedTabs.add(tab.id);
+    }
   } catch (err) {
     console.error('Textify: injection failed', err);
   }
