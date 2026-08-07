@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Textify",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Convert webpage images to ASCII art",
   "permissions": ["activeTab", "scripting", "storage"],
   "background": {

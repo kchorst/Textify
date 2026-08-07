@@ -77,6 +77,17 @@ html, body {
   border-color: #ff00ff55;
 }
 
+.mode-btn[data-mode="custom"].active {
+  background: linear-gradient(90deg, #ffaa001a 50%, #00aaff1a 50%);
+  color: #ffaa00;
+  border-color: #ffaa0055;
+}
+
+.mode-btn[data-mode="custom"]:hover:not(:disabled) {
+  color: #ffaa00;
+  border-color: #ffaa0055;
+}
+
 .mode-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -180,6 +191,53 @@ body[data-mode="glitch"] .glitch-only {
   display: flex;
 }
 
+.spacer-only {
+  display: none;
+}
+
+body[data-mode="glitch"] .spacer-only,
+body[data-mode="custom"] .spacer-only {
+  display: flex;
+}
+
+.zoom-only {
+  display: none;
+}
+
+body[data-mode="glitch"] .zoom-only,
+body[data-mode="custom"] .zoom-only {
+  display: flex;
+}
+
+.custom-only {
+  display: none;
+}
+
+body[data-mode="custom"] .custom-only {
+  display: flex;
+}
+
+/* Two-column layout for custom mode controls */
+body[data-mode="custom"] #controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+body[data-mode="custom"] #controls .control-row {
+  grid-column: span 1;
+}
+
+/* Make specific controls span both columns to keep related items together */
+body[data-mode="custom"] #controls .custom-full-width {
+  grid-column: span 2;
+}
+
+/* Span save row across both columns */
+body[data-mode="custom"] #controls #save-row {
+  grid-column: span 2;
+}
+
 /* ── Button row ── */
 #save-row {
   display: flex;
@@ -278,4 +336,95 @@ body[data-mode="glitch"] .glitch-only {
 #btn-png:hover:not(:disabled) {
   color: #a78bfa;
   border-color: #a78bfa55;
+}
+
+/* Custom mode specific styling */
+.custom-only input[type="color"] {
+  width: 40px;
+  height: 24px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+}
+
+.custom-only input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.custom-only input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+.color-checkboxes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: 8px;
+}
+
+.color-checkboxes label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #888;
+  cursor: pointer;
+}
+
+.color-checkboxes input[type="checkbox"],
+.color-checkboxes input[type="radio"] {
+  accent-color: #ffaa00;
+  cursor: pointer;
+}
+
+.preset-btns {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.preset-btn {
+  background: #1a1a1a;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.preset-btn:hover:not(:disabled) {
+  background: #222;
+  color: #ccc;
+  border-color: #555;
+}
+
+.preset-btn.active {
+  background: #ffaa001a;
+  color: #ffaa00;
+  border-color: #ffaa0055;
+}
+
+.orientation-toggle {
+  display: flex;
+  gap: 12px;
+  margin-left: 8px;
+}
+
+.orientation-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+}
+
+.orientation-toggle input[type="radio"] {
+  accent-color: #ffaa00;
+  cursor: pointer;
 }

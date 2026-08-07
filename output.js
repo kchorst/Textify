@@ -15,7 +15,14 @@ const DEFAULTS = {
   bgWhite:    false,
   spacerRows: 1,
   invertBrightness: true,
-  zoom:       100
+  zoom:       100,
+  // Custom mode defaults
+  blockColors: ['#ff0000'], // Array of selected block colors
+  bgColor: '#000000',
+  rowDensity: 50,
+  colDensity: 60,
+  hGap: 0,
+  orientation: 'horizontal'
 };
 
 // ── State ──
@@ -31,6 +38,12 @@ let currentBgWhite  = DEFAULTS.bgWhite;
 let currentSpacerRows = DEFAULTS.spacerRows;
 let currentInvertBrightness = DEFAULTS.invertBrightness;
 let currentZoom     = DEFAULTS.zoom;
+let currentBlockColors = [...DEFAULTS.blockColors];
+let currentBgColorCustom = DEFAULTS.bgColor;
+let currentRowDensity = DEFAULTS.rowDensity;
+let currentColDensity = DEFAULTS.colDensity;
+let currentHGap = DEFAULTS.hGap;
+let currentOrientation = DEFAULTS.orientation;
 let debounceTimer   = null;
 
 // ── DOM refs ──
@@ -54,6 +67,16 @@ const btnCopy        = document.getElementById('btn-copy');
 const btnTxt         = document.getElementById('btn-txt');
 const btnHtml        = document.getElementById('btn-html');
 const btnPng         = document.getElementById('btn-png');
+const blockColorChecks = document.querySelectorAll('.block-color-check');
+const bgColorRadios   = document.querySelectorAll('input[name="bg-color"]');
+const rowDensitySlider = document.getElementById('row-density-slider');
+const colDensitySlider = document.getElementById('col-density-slider');
+const rowDensityVal    = document.getElementById('row-density-val');
+const colDensityVal    = document.getElementById('col-density-val');
+const hGapSlider       = document.getElementById('h-gap-slider');
+const hGapVal          = document.getElementById('h-gap-val');
+const orientationRadios = document.querySelectorAll('input[name="orientation"]');
+const presetBtns       = document.querySelectorAll('.preset-btn');
 
 // ── Spinner ──
 function showSpinner() { spinner.classList.add('visible'); }
@@ -62,12 +85,19 @@ function setModeBtnsDisabled(d) { modeBtns.forEach(b => { b.disabled = d; }); }
 
 // ── Background colour ──
 function applyBg() {
-  const bg   = currentBgWhite ? '#ffffff' : '#000000';
-  const fg   = currentBgWhite ? '#000000' : '#ffffff';
-  document.body.style.background = bg;
-  document.getElementById('render-wrap').style.background = bg;
-  pre.style.background = bg;
-  pre.style.color      = fg;
+  if (currentMode === 'custom') {
+    const bg = currentBgColorCustom;
+    document.body.style.background = bg;
+    document.getElementById('render-wrap').style.background = bg;
+    // Don't set pre.style.background here - it's set in renderCustom
+  } else {
+    const bg   = currentBgWhite ? '#ffffff' : '#000000';
+    const fg   = currentBgWhite ? '#000000' : '#ffffff';
+    document.body.style.background = bg;
+    document.getElementById('render-wrap').style.background = bg;
+    pre.style.background = bg;
+    pre.style.color      = fg;
+  }
   btnBg.textContent    = currentBgWhite ? 'BG: White' : 'BG: Black';
   btnBg.classList.toggle('active', currentBgWhite);
 }
@@ -139,12 +169,14 @@ function doRender() {
   pre.style.overflow = '';
   pre.style.transform = '';
   pre.style.transformOrigin = '';
+  pre.style.background = '';
   pre.style.fontSize = currentFontSize + 'px';
 
   if      (currentMode === 'bw')          renderBW(cols, rows);
   else if (currentMode === 'color-ascii') renderColorASCII(cols, rows);
   else if (currentMode === 'color-block') renderColorBlock(cols, rows);
-  else                                    renderGlitch(cols, rows);
+  else if (currentMode === 'glitch')      renderGlitch(cols, rows);
+  else if (currentMode === 'custom')     renderCustom(cols, rows);
 }
 
 // ── Averaged 2×2 pixel sampler ──
@@ -308,6 +340,94 @@ function renderGlitch(cols, rows) {
   pre.innerHTML = parts.join('');
 }
 
+// ── Helper: Calculate block brightness value ──
+function calculateBlockBrightness(r, g, b) {
+  let L = (r + g + b) / 3 / 255;
+  L = Math.pow(L, 1 / currentContrast);
+  if (currentInvert) L = 1 - L;
+  L = Math.pow(L, 2);
+  return 1 - L; // Invert: bright = full block, dark = sliver
+}
+
+// ── Mode 5: Custom — fully customizable slit vision ──
+function renderCustom(cols, rows) {
+  const parts = [];
+  
+  // Use custom density settings
+  const customCols = currentColDensity;
+  const customRows = Math.floor(rows * (currentRowDensity / 50));
+  
+  // Calculate dimensions to preserve original size
+  const totalWidth = cols * currentFontSize;
+  const rowHeight = currentFontSize;
+  const gapHeight = customRows * currentSpacerRows * rowHeight;
+  const totalHeight = (customRows * rowHeight) + gapHeight;
+  const blockWidth = totalWidth / customCols;
+  
+  // Pre-calculate constants
+  const bgColor = currentBgColorCustom;
+  const gapWidth = currentHGap > 0 ? currentHGap : 0;
+  const blockColors = currentBlockColors;
+  const numColors = blockColors.length;
+  const isHorizontal = currentOrientation === 'horizontal';
+  
+  // Set container dimensions for custom mode
+  pre.style.width = totalWidth + 'px';
+  pre.style.height = totalHeight + 'px';
+  pre.style.display = 'flex';
+  pre.style.flexDirection = 'column';
+  pre.style.margin = '0';
+  pre.style.padding = '0';
+  pre.style.overflow = 'hidden';
+  pre.style.transform = `scale(${currentZoom / 100})`;
+  pre.style.transformOrigin = 'top left';
+  pre.style.background = bgColor;
+  
+  // Pre-build spacer HTML if needed
+  const spacerHtml = currentSpacerRows > 0 
+    ? `<div style="width:100%;height:${rowHeight}px;background:${bgColor};margin:0;padding:0;flex-shrink:0;"></div>`
+    : '';
+  
+  let colorIndex = 0;
+  
+  for (let row = 0; row < customRows; row++) {
+    // Add vertical gap rows
+    if (row > 0 && spacerHtml) {
+      for (let s = 0; s < currentSpacerRows; s++) {
+        parts.push(spacerHtml);
+      }
+    }
+    
+    // Build row blocks
+    const rowBlocks = [];
+    
+    for (let col = 0; col < customCols; col++) {
+      const srcCol = Math.floor(col * cols / customCols);
+      const srcRow = Math.floor(row * rows / customRows);
+      const { r, g, b } = samplePixel(srcCol, srcRow, cols, rows);
+      
+      const L = calculateBlockBrightness(r, g, b);
+      const blockColor = blockColors[colorIndex % numColors];
+      colorIndex++;
+      
+      if (isHorizontal) {
+        const blockHeight = rowHeight * (0.05 + (L * 0.95));
+        const actualBlockWidth = blockWidth - gapWidth;
+        rowBlocks.push(`<div style="background:${blockColor};width:${actualBlockWidth}px;height:${blockHeight}px;margin:0 ${gapWidth/2}px;padding:0;flex-shrink:0;"></div>`);
+      } else {
+        const blockWidthVar = blockWidth * (0.05 + (L * 0.95));
+        const actualBlockWidth = blockWidthVar - gapWidth;
+        const marginSide = (blockWidth - actualBlockWidth) / 2;
+        rowBlocks.push(`<div style="background:${blockColor};width:${actualBlockWidth}px;height:${rowHeight}px;margin:0 ${marginSide}px;padding:0;flex-shrink:0;"></div>`);
+      }
+    }
+    
+    parts.push(`<div style="display:flex;width:100%;height:${rowHeight}px;margin:0;padding:0;flex-shrink:0;align-items:center;">${rowBlocks.join('')}</div>`);
+  }
+  
+  pre.innerHTML = parts.join('');
+}
+
 function escapeHtml(ch) {
   if (ch === '&') return '&amp;';
   if (ch === '<') return '&lt;';
@@ -335,7 +455,14 @@ function saveSettings() {
       spacerRows: currentSpacerRows,
       invertBrightness: currentInvertBrightness,
       zoom:      currentZoom,
-      mode:      currentMode
+      mode:      currentMode,
+      // Custom mode settings
+      blockColors: currentBlockColors,
+      bgColor: currentBgColorCustom,
+      rowDensity: currentRowDensity,
+      colDensity: currentColDensity,
+      hGap: currentHGap,
+      orientation: currentOrientation
     }
   });
 }
@@ -353,6 +480,12 @@ function loadSettings() {
         currentSpacerRows = s.spacerRows ?? DEFAULTS.spacerRows;
         currentInvertBrightness = s.invertBrightness ?? DEFAULTS.invertBrightness;
         currentZoom     = s.zoom      ?? DEFAULTS.zoom;
+        currentBlockColors = s.blockColors ?? [...DEFAULTS.blockColors];
+        currentBgColorCustom = s.bgColor ?? DEFAULTS.bgColor;
+        currentRowDensity = s.rowDensity ?? DEFAULTS.rowDensity;
+        currentColDensity = s.colDensity ?? DEFAULTS.colDensity;
+        currentHGap = s.hGap ?? DEFAULTS.hGap;
+        currentOrientation = s.orientation ?? DEFAULTS.orientation;
         currentMode     = s.mode      ?? 'bw';
       }
       resolve();
@@ -373,6 +506,25 @@ function syncUI() {
   spacerVal.textContent   = currentSpacerRows;
   zoomVal.textContent     = currentZoom + '%';
 
+  // Custom mode controls
+  blockColorChecks.forEach(check => {
+    check.checked = currentBlockColors.includes(check.value);
+  });
+  bgColorRadios.forEach(radio => {
+    radio.checked = radio.value === currentBgColorCustom;
+  });
+  rowDensitySlider.value = currentRowDensity;
+  rowDensityVal.textContent = currentRowDensity;
+  colDensitySlider.value = currentColDensity;
+  colDensityVal.textContent = currentColDensity;
+  hGapSlider.value = currentHGap;
+  hGapVal.textContent = currentHGap;
+  
+  // Set orientation radio
+  orientationRadios.forEach(radio => {
+    radio.checked = radio.value === currentOrientation;
+  });
+
   btnInvert.classList.toggle('active', currentInvert);
 
   modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
@@ -392,6 +544,7 @@ modeBtns.forEach(btn => {
     modeBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.body.dataset.mode = currentMode;
+    applyBg();
     applyZoom();
     saveSettings();
     render();
@@ -415,15 +568,25 @@ btnBg.addEventListener('click', () => {
 
 // ── Reset ──
 btnReset.addEventListener('click', () => {
-  currentFontSize = DEFAULTS.fontSize;
-  currentWidth    = DEFAULTS.width;
-  currentContrast = DEFAULTS.contrast;
-  currentInvert   = DEFAULTS.invert;
-  currentBgWhite  = DEFAULTS.bgWhite;
-  currentSpacerRows = DEFAULTS.spacerRows;
-  currentInvertBrightness = DEFAULTS.invertBrightness;
-  currentZoom     = DEFAULTS.zoom;
-  currentMode     = 'bw';
+  // Reset only current mode's settings
+  if (currentMode === 'custom') {
+    currentBlockColors = [...DEFAULTS.blockColors];
+    currentBgColorCustom = DEFAULTS.bgColor;
+    currentRowDensity = DEFAULTS.rowDensity;
+    currentColDensity = DEFAULTS.colDensity;
+    currentHGap = DEFAULTS.hGap;
+    currentOrientation = DEFAULTS.orientation;
+    currentZoom = DEFAULTS.zoom;
+  } else if (currentMode === 'glitch') {
+    currentSpacerRows = DEFAULTS.spacerRows;
+    currentZoom = DEFAULTS.zoom;
+  } else {
+    currentFontSize = DEFAULTS.fontSize;
+    currentWidth = DEFAULTS.width;
+    currentContrast = DEFAULTS.contrast;
+    currentInvert = DEFAULTS.invert;
+    currentBgWhite = DEFAULTS.bgWhite;
+  }
   syncUI();
   saveSettings();
   render();
@@ -461,8 +624,91 @@ zoomSlider.addEventListener('input', () => {
   scheduleRender();
 });
 
+// Custom mode controls
+blockColorChecks.forEach(check => {
+  check.addEventListener('change', () => {
+    currentBlockColors = Array.from(blockColorChecks)
+      .filter(c => c.checked)
+      .map(c => c.value);
+    if (currentBlockColors.length === 0) {
+      currentBlockColors = ['#ff0000']; // Default to red if none selected
+      check.checked = true;
+    }
+    scheduleRender();
+  });
+});
+
+bgColorRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (radio.checked) {
+      currentBgColorCustom = radio.value;
+      scheduleRender();
+    }
+  });
+});
+
+rowDensitySlider.addEventListener('input', () => {
+  currentRowDensity = parseInt(rowDensitySlider.value, 10);
+  rowDensityVal.textContent = currentRowDensity;
+  scheduleRender();
+});
+
+colDensitySlider.addEventListener('input', () => {
+  currentColDensity = parseInt(colDensitySlider.value, 10);
+  colDensityVal.textContent = currentColDensity;
+  scheduleRender();
+});
+
+hGapSlider.addEventListener('input', () => {
+  currentHGap = parseInt(hGapSlider.value, 10);
+  hGapVal.textContent = currentHGap;
+  scheduleRender();
+});
+
+orientationRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (radio.checked) {
+      currentOrientation = radio.value;
+      scheduleRender();
+    }
+  });
+});
+
+// Preset buttons
+presetBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const preset = btn.dataset.preset;
+    if (preset === 'row-coarse') {
+      currentRowDensity = 20;
+      rowDensitySlider.value = 20;
+      rowDensityVal.textContent = 20;
+    } else if (preset === 'row-medium') {
+      currentRowDensity = 50;
+      rowDensitySlider.value = 50;
+      rowDensityVal.textContent = 50;
+    } else if (preset === 'row-fine') {
+      currentRowDensity = 80;
+      rowDensitySlider.value = 80;
+      rowDensityVal.textContent = 80;
+    } else if (preset === 'col-coarse') {
+      currentColDensity = 30;
+      colDensitySlider.value = 30;
+      colDensityVal.textContent = 30;
+    } else if (preset === 'col-medium') {
+      currentColDensity = 60;
+      colDensitySlider.value = 60;
+      colDensityVal.textContent = 60;
+    } else if (preset === 'col-fine') {
+      currentColDensity = 90;
+      colDensitySlider.value = 90;
+      colDensityVal.textContent = 90;
+    }
+    scheduleRender();
+  });
+});
+
 function applyZoom() {
-  if (currentMode === 'glitch') {
+  if (currentMode === 'glitch' || currentMode === 'custom') {
     pre.style.transform = `scale(${currentZoom / 100})`;
     pre.style.transformOrigin = 'top left';
   } else {
@@ -504,6 +750,24 @@ btnHtml.addEventListener('click', () => {
     line-height: 1em; 
     background: #000000; 
     color: #ffffff; 
+    white-space: pre; 
+    padding: 0; 
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }`;
+    content = pre.innerHTML;
+  } else if (currentMode === 'custom') {
+    // Custom mode needs specific CSS for flexbox layout
+    css = `
+  body { margin: 0; background: ${currentBgColorCustom}; }
+  pre { 
+    font-family: monospace; 
+    font-size: ${currentFontSize}px; 
+    line-height: 1em; 
+    background: ${currentBgColorCustom}; 
+    color: ${currentBlockColors[0]}; 
     white-space: pre; 
     padding: 0; 
     margin: 0;
@@ -593,6 +857,67 @@ function savePNG() {
         ctx.fillStyle = color;
         const blockY = currentY + (rowHeight - blockHeight) / 2;
         ctx.fillRect(col * blockWidth, blockY, blockWidth, blockHeight);
+      }
+
+      currentY += rowHeight;
+    }
+  } else if (currentMode === 'custom') {
+    const customCols = currentColDensity;
+    const customRows = Math.floor(rows * (currentRowDensity / 50));
+    const totalWidth = cols * currentFontSize;
+    const rowHeight = currentFontSize;
+    const gapHeight = customRows * currentSpacerRows * rowHeight;
+    const totalHeight = (customRows * rowHeight) + gapHeight;
+    const blockWidth = totalWidth / customCols;
+
+    canvas = document.createElement('canvas');
+    canvas.width = totalWidth;
+    canvas.height = totalHeight;
+    ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = currentBgColorCustom;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Pre-calculate constants
+    const gapWidth = currentHGap > 0 ? currentHGap : 0;
+    const blockColors = currentBlockColors;
+    const numColors = blockColors.length;
+    const isHorizontal = currentOrientation === 'horizontal';
+
+    let currentY = 0;
+    let colorIndex = 0;
+    for (let row = 0; row < customRows; row++) {
+      // Add vertical gap rows
+      if (row > 0 && currentSpacerRows > 0) {
+        currentY += currentSpacerRows * rowHeight;
+      }
+
+      for (let col = 0; col < customCols; col++) {
+        const srcCol = Math.floor(col * cols / customCols);
+        const srcRow = Math.floor(row * rows / customRows);
+        const { r, g, b } = samplePixel(srcCol, srcRow, cols, rows);
+
+        const L = calculateBlockBrightness(r, g, b);
+        const blockColor = blockColors[colorIndex % numColors];
+        colorIndex++;
+
+        if (isHorizontal) {
+          const blockHeight = rowHeight * (0.05 + (L * 0.95));
+          const actualBlockWidth = blockWidth - gapWidth;
+          
+          ctx.fillStyle = blockColor;
+          const blockY = currentY + (rowHeight - blockHeight) / 2;
+          const blockX = col * blockWidth + gapWidth / 2;
+          ctx.fillRect(blockX, blockY, actualBlockWidth, blockHeight);
+        } else {
+          const blockWidthVar = blockWidth * (0.05 + (L * 0.95));
+          const actualBlockWidth = blockWidthVar - gapWidth;
+          const marginSide = (blockWidth - actualBlockWidth) / 2;
+          
+          ctx.fillStyle = blockColor;
+          const blockX = col * blockWidth + marginSide;
+          ctx.fillRect(blockX, currentY, actualBlockWidth, rowHeight);
+        }
       }
 
       currentY += rowHeight;

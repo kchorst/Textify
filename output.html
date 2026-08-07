@@ -16,6 +16,7 @@
       <button class="mode-btn" data-mode="color-ascii">Color ASCII</button>
       <button class="mode-btn" data-mode="color-block">Color Block</button>
       <button class="mode-btn" data-mode="glitch">Glitch</button>
+      <button class="mode-btn" data-mode="custom">Custom</button>
     </div>
   </div>
 
@@ -44,15 +45,69 @@
       <input type="range" id="contrast-slider" min="0.5" max="3.0" step="0.1" value="1.0" />
       <span class="control-val" id="contrast-val">1.0</span>
     </div>
-    <div class="control-row glitch-only">
+    <div class="control-row spacer-only">
       <label for="spacer-slider">Spacer Rows</label>
       <input type="range" id="spacer-slider" min="0" max="5" step="1" value="0" />
       <span class="control-val" id="spacer-val">0</span>
     </div>
-    <div class="control-row glitch-only">
+    <div class="control-row zoom-only">
       <label for="zoom-slider">Zoom</label>
       <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100" />
       <span class="control-val" id="zoom-val">100%</span>
+    </div>
+    <div class="control-row custom-only custom-full-width">
+      <label>Block Colors</label>
+      <div class="color-checkboxes">
+        <label><input type="checkbox" class="block-color-check" value="#ff0000" checked /> Red</label>
+        <label><input type="checkbox" class="block-color-check" value="#00ffff" /> Cyan</label>
+        <label><input type="checkbox" class="block-color-check" value="#0000ff" /> Blue</label>
+        <label><input type="checkbox" class="block-color-check" value="#ffff00" /> Yellow</label>
+        <label><input type="checkbox" class="block-color-check" value="#000000" /> Black</label>
+        <label><input type="checkbox" class="block-color-check" value="#ffffff" /> White</label>
+      </div>
+    </div>
+    <div class="control-row custom-only custom-full-width">
+      <label>Background</label>
+      <div class="color-checkboxes">
+        <label><input type="radio" name="bg-color" value="#ff0000" /> Red</label>
+        <label><input type="radio" name="bg-color" value="#00ffff" /> Cyan</label>
+        <label><input type="radio" name="bg-color" value="#0000ff" /> Blue</label>
+        <label><input type="radio" name="bg-color" value="#ffff00" /> Yellow</label>
+        <label><input type="radio" name="bg-color" value="#000000" checked /> Black</label>
+        <label><input type="radio" name="bg-color" value="#ffffff" /> White</label>
+      </div>
+    </div>
+    <div class="control-row custom-only custom-full-width">
+      <label>Row Density</label>
+      <input type="range" id="row-density-slider" min="10" max="100" step="5" value="50" />
+      <span class="control-val" id="row-density-val">50</span>
+      <div class="preset-btns">
+        <button class="preset-btn" data-preset="row-coarse">Coarse</button>
+        <button class="preset-btn" data-preset="row-medium">Medium</button>
+        <button class="preset-btn" data-preset="row-fine">Fine</button>
+      </div>
+    </div>
+    <div class="control-row custom-only custom-full-width">
+      <label>Col Density</label>
+      <input type="range" id="col-density-slider" min="10" max="100" step="5" value="60" />
+      <span class="control-val" id="col-density-val">60</span>
+      <div class="preset-btns">
+        <button class="preset-btn" data-preset="col-coarse">Coarse</button>
+        <button class="preset-btn" data-preset="col-medium">Medium</button>
+        <button class="preset-btn" data-preset="col-fine">Fine</button>
+      </div>
+    </div>
+    <div class="control-row custom-only">
+      <label for="h-gap-slider">H Gap</label>
+      <input type="range" id="h-gap-slider" min="0" max="10" step="1" value="0" />
+      <span class="control-val" id="h-gap-val">0</span>
+    </div>
+    <div class="control-row custom-only">
+      <label>Orientation</label>
+      <div class="orientation-toggle">
+        <label><input type="radio" name="orientation" value="horizontal" checked /> Horizontal</label>
+        <label><input type="radio" name="orientation" value="vertical" /> Vertical</label>
+      </div>
     </div>
 
     <div id="save-row">

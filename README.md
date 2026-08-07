@@ -2,14 +2,26 @@
 
 Textify is a browser extension that allows you to convert images from any webpage into ASCII art directly in your browser.
 
-## Latest Update: Glitch Mode
-**NEW:** Added Glitch mode - a red/cyan block-based rendering effect inspired by analog glitch art. This mode creates striking visual distortions using alternating colored blocks that vary in height based on image brightness.
+## Latest Update: Custom Mode
+**NEW:** Added Custom mode - a fully customizable slit vision rendering mode with comprehensive control over all rendering parameters while preserving original image dimensions.
 
-**Glitch Mode Tips:**
-- **Best Subjects:** Close-up portraits and face-only shots with minimal backgrounds work best for glitch mode
-- **Adjustments:** You may need to fine-tune font size, width, contrast, and spacer rows for optimal results
-- **Spacer Rows:** Use the Spacer Rows slider (0-5) to control vertical spacing between colored rows
-- **Note:** While close-ups work best for all ASCII modes, glitch mode particularly benefits from high-contrast, simple compositions
+**Credit:** The slit vision effect in Custom mode is inspired by the visual illusion research of **Professor Akiyoshi Kitaoka** from Ritsumeikan University, Osaka, Japan. His pioneering work on visual perception and optical illusions has inspired countless artists and researchers. Learn more at: https://www.ritsumei.ac.jp/~akitaoka/index-e.html
+
+**Custom Mode Features:**
+- **Color Selection:** Choose multiple block colors (Red, Cyan, Blue, Yellow, Black, White) that cycle through the rendering
+- **Background Color:** Select any of 6 preset colors for the background
+- **Density Control:** Adjust row and column density with Coarse/Medium/Fine presets for fine-grained control
+- **Gap Control:** Set horizontal and vertical gaps between blocks/rows
+- **Orientation:** Toggle between horizontal (variable height blocks) and vertical (variable width blocks) slit patterns
+- **Zoom:** Scale the rendered output (10-100%)
+- **Preserves Dimensions:** All rendering maintains the original image's width and height
+
+**Custom Mode Tips:**
+- **Best Subjects:** Portraits and detailed images work well with custom mode
+- **Color Combinations:** Try Red/Cyan for classic slit vision, or Blue/Yellow for high contrast
+- **Density:** Start with Medium density (50/60) and adjust based on image complexity
+- **Gaps:** Use horizontal gaps to separate blocks, spacer rows for vertical spacing
+- **Orientation:** Horizontal is traditional slit vision; vertical creates a different aesthetic
 
 ## License: Non-Commercial Use Only
 
@@ -26,11 +38,12 @@ For the full binding legal text, please see the accompanying [LICENSE.md](LICENS
     * **Color ASCII:** Colored characters based on the source image pixels.
     * **Color Block:** A block-based representation that retains image color and density.
     * **Glitch:** Red/cyan block-based rendering with variable heights and alternating colors for a glitched aesthetic.
-* **Customization:** Adjust font size, width, contrast, and toggle between light/dark backgrounds. Glitch mode includes additional spacer row control.
+    * **Custom:** Fully customizable slit vision mode with color selection, density control, gaps, and orientation toggle.
+* **Customization:** Adjust font size, width, contrast, and toggle between light/dark backgrounds. Glitch and Custom modes include zoom control. Custom mode includes comprehensive parameter control.
 * **Export Options:** * Copy the result to your clipboard.
     * Save as a `.txt` file (BW mode only).
-    * Save as a standalone `.html` file.
-    * Save as a `.png` image.
+    * Save as a standalone `.html` file (all modes).
+    * Save as a `.png` image (all modes).
 
 ## Usage
 1. Click the **Textify icon** in your browser toolbar to activate the extension on the current page.
