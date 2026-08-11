@@ -2,9 +2,31 @@
 
 Textify is a browser extension that allows you to convert images from any webpage into ASCII art directly in your browser.
 
-## Latest Update: Custom Mode
-**NEW:** Added Custom mode - a fully customizable slit vision rendering mode with comprehensive control over all rendering parameters while preserving original image dimensions.
+## Latest Update: Half-Tone Mode
+**NEW:** Added Half-Tone mode - a traditional halftone dot pattern rendering mode with comprehensive color control and image processing options.
 
+**Credit:** The halftone effect in Half-Tone mode is inspired by the online halftone image generator at **Picture to People** (https://www.picturetopeople.org/image_effects/photo-halftone/halftone-image-generator.html). This tool provides advanced halftone photo effects with customizable parameters for artistic image transformation.
+
+**Half-Tone Mode Features:**
+- **Color Improvement:** 9 processing options (None, Strong, Privilege bright/dark, Smart, Smart channels, Hot colors, Smart hot, Pastel) to enhance image colors before dot sizing
+- **Improvement Level:** Adjustable intensity (1-10) for color processing effects
+- **Overall Style:** Bright/Dark toggle for global brightness adjustment
+- **Halftone Size:** 12 size options (Micro to Colossal) for dramatic dot size control
+- **Color Options:** Use actual image colors or choose from preset colors (Red, Cyan, Blue, Yellow, Black, White) with color picker support
+- **Background Color:** Choose from preset colors or use color picker for custom backgrounds
+- **Transparent PNG Export:** Option to export halftone as transparent PNG file
+- **Zoom Control:** Scale the rendered output (10-100%)
+- **Preserves Aspect Ratio:** Maintains original image proportions in both preview and export
+
+**Half-Tone Mode Tips:**
+- **Use Image Colors:** Check "Use image colors" to use the actual RGB colors from your image for the halftone dots
+- **Color Improvement:** Try "Strong" or "Hot colors" with colorful images for dramatic effects
+- **Improvement Level:** Set to 5-8 for moderate effects, 9-10 for intense color processing
+- **Size Control:** Use "Micro" for fine detail, "Colossal" for bold artistic effects
+- **Best Subjects:** Colorful photographs work best with image colors enabled
+- **Background:** Choose contrasting background color for better visibility
+
+## Previous Update: Custom Mode
 **Credit:** The slit vision effect in Custom mode is inspired by the visual illusion research of **Professor Akiyoshi Kitaoka** from Ritsumeikan University, Osaka, Japan. His pioneering work on visual perception and optical illusions has inspired countless artists and researchers. Learn more at: https://www.ritsumei.ac.jp/~akitaoka/index-e.html
 
 **Custom Mode Features:**
@@ -37,13 +59,14 @@ For the full binding legal text, please see the accompanying [LICENSE.md](LICENS
     * **BW:** Traditional black and white ASCII art.
     * **Color ASCII:** Colored characters based on the source image pixels.
     * **Color Block:** A block-based representation that retains image color and density.
+    * **Half-Tone:** Traditional halftone dot pattern with color improvement, image color support, and customizable dot sizes.
     * **Glitch:** Red/cyan block-based rendering with variable heights and alternating colors for a glitched aesthetic.
     * **Custom:** Fully customizable slit vision mode with color selection, density control, gaps, and orientation toggle.
-* **Customization:** Adjust font size, width, contrast, and toggle between light/dark backgrounds. Glitch and Custom modes include zoom control. Custom mode includes comprehensive parameter control.
+* **Customization:** Adjust font size, width, contrast, and toggle between light/dark backgrounds. Glitch, Half-Tone, and Custom modes include zoom control. Custom and Half-Tone modes include comprehensive parameter control.
 * **Export Options:** * Copy the result to your clipboard.
     * Save as a `.txt` file (BW mode only).
     * Save as a standalone `.html` file (all modes).
-    * Save as a `.png` image (all modes).
+    * Save as a `.png` image (all modes, with transparent PNG option for Half-Tone mode).
 
 ## Usage
 1. Click the **Textify icon** in your browser toolbar to activate the extension on the current page.

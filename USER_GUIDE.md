@@ -60,6 +60,55 @@ Red/cyan block-based rendering with variable heights and alternating colors.
 - Higher contrast values create more dramatic glitch effects
 - Works best with face-only shots and minimal backgrounds
 
+### Half-Tone (NEW)
+Traditional halftone dot pattern rendering with advanced color processing and image color support.
+
+**Credit:** The halftone effect in Half-Tone mode is inspired by the online halftone image generator at **Picture to People** (https://www.picturetopeople.org/image_effects/photo-halftone/halftone-image-generator.html). This tool provides advanced halftone photo effects with customizable parameters for artistic image transformation.
+
+**Controls:**
+- **Color Improvement:** 9 processing options
+  - None: No color processing
+  - Strong: Boosts all RGB values by 1.5x
+  - Privilege bright: Enhances bright areas
+  - Privilege dark: Enhances dark areas
+  - Smart: Enhances above-average brightness pixels
+  - Smart channels: Enhances dominant RGB channel
+  - Hot colors: Strongly boosts red-dominant pixels
+  - Smart hot: Boosts very bright red-dominant pixels
+  - Pastel: Softens colors toward white
+- **Improvement Level:** 1-10 (intensity multiplier for color processing)
+- **Overall Style:** Bright/Dark (global brightness adjustment)
+- **Halftone Size:** 12 options (Micro/Nano/Tiny/Very small/Small/Average/Big/Very big/Huge/Massive/Giant/Colossal)
+- **Color Options:**
+  - Use image colors: Check to use actual RGB colors from your image
+  - Preset colors: Red, Cyan, Blue, Yellow, Black, White (multi-select)
+  - Color picker: Custom color selection
+- **Background Color:** Preset colors or color picker
+- **Transparent PNG:** Export as transparent PNG file
+- **Zoom:** 10-100%
+
+**Best For:** Colorful photographs, artistic halftone effects, retro printing aesthetics
+
+**Tips:**
+- **Use Image Colors:** Check "Use image colors" to use actual image colors for dramatic effects
+- **Color Improvement:**
+  - Try "Strong" or "Hot colors" with colorful images for dramatic effects
+  - "Pastel" creates soft, muted halftone patterns
+  - "Smart channels" enhances the dominant color in each area
+- **Improvement Level:**
+  - 1-3: Subtle color enhancement
+  - 4-7: Moderate color processing
+  - 8-10: Intense color transformation
+- **Size Control:**
+  - Micro/Nano: Fine detail, almost continuous tone
+  - Small/Average: Classic halftone look
+  - Huge/Colossal: Bold, artistic dot patterns
+- **Background:**
+  - Use contrasting background for better visibility
+  - White background with dark dots for traditional look
+  - Black background with bright dots for inverted effect
+- **Transparent PNG:** Enable for halftone overlays without background
+
 ### Custom (NEW)
 Fully customizable slit vision mode with comprehensive parameter control.
 
@@ -117,6 +166,7 @@ Saves as a PNG image.
 
 - **Note:** PNG export preserves the exact rendered output including colors and dimensions
 - **Custom Mode:** Exports with custom colors, gaps, and orientation
+- **Half-Tone Mode:** Option to export as transparent PNG (when enabled, background color is ignored)
 
 ## Settings Persistence
 

@@ -88,6 +88,17 @@ html, body {
   border-color: #ffaa0055;
 }
 
+.mode-btn[data-mode="halftone"]:hover:not(:disabled) {
+  color: #ffaa00;
+  border-color: #ffaa0055;
+}
+
+.mode-btn[data-mode="halftone"].active {
+  background: #222;
+  color: #ffaa00;
+  border-color: #ffaa00;
+}
+
 .mode-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -111,6 +122,7 @@ html, body {
   white-space: pre;
   padding: 4px;
   min-height: 100%;
+  max-width: none;
 }
 
 /* ── Spinner ── */
@@ -205,6 +217,7 @@ body[data-mode="custom"] .spacer-only {
 }
 
 body[data-mode="glitch"] .zoom-only,
+body[data-mode="halftone"] .zoom-only,
 body[data-mode="custom"] .zoom-only {
   display: flex;
 }
@@ -217,24 +230,36 @@ body[data-mode="custom"] .custom-only {
   display: flex;
 }
 
-/* Two-column layout for custom mode controls */
-body[data-mode="custom"] #controls {
+.halftone-only {
+  display: none;
+}
+
+body[data-mode="halftone"] .halftone-only {
+  display: flex;
+}
+
+/* Two-column layout for custom and halftone mode controls */
+body[data-mode="custom"] #controls,
+body[data-mode="halftone"] #controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-body[data-mode="custom"] #controls .control-row {
+body[data-mode="custom"] #controls .control-row,
+body[data-mode="halftone"] #controls .control-row {
   grid-column: span 1;
 }
 
 /* Make specific controls span both columns to keep related items together */
-body[data-mode="custom"] #controls .custom-full-width {
+body[data-mode="custom"] #controls .custom-full-width,
+body[data-mode="halftone"] #controls .halftone-full-width {
   grid-column: span 2;
 }
 
 /* Span save row across both columns */
-body[data-mode="custom"] #controls #save-row {
+body[data-mode="custom"] #controls #save-row,
+body[data-mode="halftone"] #controls #save-row {
   grid-column: span 2;
 }
 
@@ -377,6 +402,23 @@ body[data-mode="custom"] #controls #save-row {
 .color-checkboxes input[type="radio"] {
   accent-color: #ffaa00;
   cursor: pointer;
+}
+
+/* Dropdown styling for halftone mode */
+body[data-mode="halftone"] #controls select {
+  flex: 1;
+  padding: 4px 8px;
+  background: #1a1a1a;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+body[data-mode="halftone"] #controls select:focus {
+  outline: none;
+  border-color: #ffaa00;
 }
 
 .preset-btns {

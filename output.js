@@ -22,7 +22,16 @@ const DEFAULTS = {
   rowDensity: 50,
   colDensity: 60,
   hGap: 0,
-  orientation: 'horizontal'
+  orientation: 'horizontal',
+  // Halftone mode defaults
+  colorImprovement: 0, // None
+  improvementLevel: 2,
+  overallStyle: 'dark',
+  halftoneSize: 7, // Small
+  halftoneColors: ['#000000'], // Array of selected halftone colors
+  halftoneBgColor: '#ffffff',
+  transparentPng: false,
+  useImageColors: false // Use actual image colors for halftone dots
 };
 
 // ── State ──
@@ -44,6 +53,14 @@ let currentRowDensity = DEFAULTS.rowDensity;
 let currentColDensity = DEFAULTS.colDensity;
 let currentHGap = DEFAULTS.hGap;
 let currentOrientation = DEFAULTS.orientation;
+let currentColorImprovement = DEFAULTS.colorImprovement;
+let currentImprovementLevel = DEFAULTS.improvementLevel;
+let currentOverallStyle = DEFAULTS.overallStyle;
+let currentHalftoneSize = DEFAULTS.halftoneSize;
+let currentHalftoneColors = [...DEFAULTS.halftoneColors];
+let currentHalftoneBgColor = DEFAULTS.halftoneBgColor;
+let currentTransparentPng = DEFAULTS.transparentPng;
+let currentUseImageColors = DEFAULTS.useImageColors;
 let debounceTimer   = null;
 
 // ── DOM refs ──
@@ -77,6 +94,17 @@ const hGapSlider       = document.getElementById('h-gap-slider');
 const hGapVal          = document.getElementById('h-gap-val');
 const orientationRadios = document.querySelectorAll('input[name="orientation"]');
 const presetBtns       = document.querySelectorAll('.preset-btn');
+// Halftone mode controls
+const colorImprovementSelect = document.getElementById('color-improvement');
+const improvementLevelSelect = document.getElementById('improvement-level');
+const overallStyleSelect = document.getElementById('overall-style');
+const halftoneSizeSelect = document.getElementById('halftone-size');
+const halftoneColorChecks = document.querySelectorAll('.halftone-color-check');
+const halftoneBgColorRadios = document.querySelectorAll('input[name="halftone-bg-color"]');
+const transparentPngCheckbox = document.getElementById('transparent-png');
+const halftoneColorPicker = document.getElementById('halftone-color-picker');
+const halftoneBgColorPicker = document.getElementById('halftone-bg-color-picker');
+const useImageColorsCheckbox = document.getElementById('use-image-colors');
 
 // ── Spinner ──
 function showSpinner() { spinner.classList.add('visible'); }
@@ -90,6 +118,11 @@ function applyBg() {
     document.body.style.background = bg;
     document.getElementById('render-wrap').style.background = bg;
     // Don't set pre.style.background here - it's set in renderCustom
+  } else if (currentMode === 'halftone') {
+    const bg = currentHalftoneBgColor;
+    document.body.style.background = bg;
+    document.getElementById('render-wrap').style.background = bg;
+    // Don't set pre.style.background here - it's set in renderHalftone
   } else {
     const bg   = currentBgWhite ? '#ffffff' : '#000000';
     const fg   = currentBgWhite ? '#000000' : '#ffffff';
@@ -100,6 +133,9 @@ function applyBg() {
   }
   btnBg.textContent    = currentBgWhite ? 'BG: White' : 'BG: Black';
   btnBg.classList.toggle('active', currentBgWhite);
+  
+  // Disable BG button in halftone mode (background controlled by back color setting)
+  btnBg.disabled = currentMode === 'halftone';
 }
 
 // ── Decode data URL → pixel array ──
@@ -175,6 +211,7 @@ function doRender() {
   if      (currentMode === 'bw')          renderBW(cols, rows);
   else if (currentMode === 'color-ascii') renderColorASCII(cols, rows);
   else if (currentMode === 'color-block') renderColorBlock(cols, rows);
+  else if (currentMode === 'halftone')   renderHalftone(cols, rows);
   else if (currentMode === 'glitch')      renderGlitch(cols, rows);
   else if (currentMode === 'custom')     renderCustom(cols, rows);
 }
@@ -428,6 +465,162 @@ function renderCustom(cols, rows) {
   pre.innerHTML = parts.join('');
 }
 
+// ── Mode 4: Halftone — traditional halftone dot pattern ──
+function renderHalftone(cols, rows) {
+  const parts = [];
+  
+  // Use halftone size setting (value 3-20 corresponds to dot size)
+  const dotSize = currentHalftoneSize;
+  const halftoneCols = Math.floor(cols / (dotSize / 12)); // Scale columns based on dot size
+  const halftoneRows = rows; // Use original row count like other working modes
+  
+  // Calculate dimensions to match original image aspect ratio
+  const totalWidth = cols * currentFontSize;
+  const originalAspectRatio = imgWidth / imgHeight;
+  const totalHeight = totalWidth / originalAspectRatio; // Force correct aspect ratio
+  const rowHeight = totalHeight / halftoneRows;
+  const blockWidth = totalWidth / halftoneCols;
+  
+  // Set container dimensions for halftone mode
+  pre.style.width = totalWidth + 'px';
+  pre.style.height = totalHeight + 'px';
+  pre.style.display = 'flex';
+  pre.style.flexDirection = 'column';
+  pre.style.margin = '0';
+  pre.style.padding = '0';
+  pre.style.overflow = 'hidden';
+  pre.style.transform = `scale(${currentZoom / 100})`;
+  pre.style.transformOrigin = 'top left';
+  pre.style.background = currentHalftoneBgColor;
+  pre.style.alignItems = 'stretch'; // Ensure rows stretch to full height
+  pre.style.maxWidth = 'none'; // Prevent CSS max-width from interfering
+  
+  // Background color
+  const bgColor = currentHalftoneBgColor;
+  
+  // Get current halftone color (cycle through selected colors)
+  let colorIndex = 0;
+  const halftoneColors = currentHalftoneColors;
+  const numColors = halftoneColors.length;
+  
+  for (let row = 0; row < halftoneRows; row++) {
+    // Build row with flexbox for touching dots
+    let rowHtml = `<div style="display:flex;width:100%;height:${rowHeight}px;margin:0;padding:0;flex-shrink:0;align-items:center;box-sizing:border-box;">`;
+    
+    for (let col = 0; col < halftoneCols; col++) {
+      // Map halftone coordinates to original image coordinates
+      const srcCol = Math.floor(col * cols / halftoneCols);
+      const srcRow = Math.floor(row * rows / halftoneRows);
+      
+      const { r, g, b } = samplePixel(srcCol, srcRow, cols, rows);
+      
+      // Apply color improvement based on setting
+      let processedR = r, processedG = g, processedB = b;
+      
+      if (currentColorImprovement > 0) {
+        switch(parseInt(currentColorImprovement)) {
+          case 1: // Strong
+            processedR = Math.min(255, r * 1.5);
+            processedG = Math.min(255, g * 1.5);
+            processedB = Math.min(255, b * 1.5);
+            break;
+          case 2: // Privilege bright
+            if (r + g + b > 382) {
+              processedR = Math.min(255, r * 1.3);
+              processedG = Math.min(255, g * 1.3);
+              processedB = Math.min(255, b * 1.3);
+            }
+            break;
+          case 3: // Privilege dark
+            if (r + g + b < 382) {
+              processedR = Math.min(255, r * 1.3);
+              processedG = Math.min(255, g * 1.3);
+              processedB = Math.min(255, b * 1.3);
+            }
+            break;
+          case 4: // Smart
+            const avg = (r + g + b) / 3;
+            if (avg > 128) {
+              processedR = Math.min(255, r * 1.2);
+              processedG = Math.min(255, g * 1.2);
+              processedB = Math.min(255, b * 1.2);
+            }
+            break;
+          case 5: // Smart channels
+            if (r > g && r > b) processedR = Math.min(255, r * 1.2);
+            else if (g > r && g > b) processedG = Math.min(255, g * 1.2);
+            else if (b > r && b > g) processedB = Math.min(255, b * 1.2);
+            break;
+          case 6: // Hot colors
+            if (r > g && r > b) {
+              processedR = Math.min(255, r * 1.5);
+              processedG = Math.max(0, g * 0.8);
+              processedB = Math.max(0, b * 0.8);
+            }
+            break;
+          case 7: // Smart hot
+            if (r > g && r > b && r > 150) {
+              processedR = Math.min(255, r * 1.4);
+              processedG = Math.max(0, g * 0.7);
+              processedB = Math.max(0, b * 0.7);
+            }
+            break;
+          case 8: // Pastel
+            processedR = Math.min(255, r + (255 - r) * 0.3);
+            processedG = Math.min(255, g + (255 - g) * 0.3);
+            processedB = Math.min(255, b + (255 - b) * 0.3);
+            break;
+        }
+      }
+      
+      // Apply improvement level
+      const levelFactor = 1 + (currentImprovementLevel - 1) * 0.1;
+      if (currentColorImprovement > 0 && currentColorImprovement !== 8) {
+        processedR = Math.min(255, processedR * levelFactor);
+        processedG = Math.min(255, processedG * levelFactor);
+        processedB = Math.min(255, processedB * levelFactor);
+      }
+      
+      // Apply overall style
+      if (currentOverallStyle === 'bright') {
+        processedR = Math.min(255, processedR + (255 - processedR) * 0.2);
+        processedG = Math.min(255, processedG + (255 - processedG) * 0.2);
+        processedB = Math.min(255, processedB + (255 - processedB) * 0.2);
+      }
+      
+      // Calculate brightness for dot size
+      const brightness = (processedR + processedG + processedB) / 3;
+      let L = brightness / 255;
+      L = Math.pow(L, 1 / currentContrast);
+      if (currentInvert) L = 1 - L;
+      
+      // Dot size based on brightness (larger = brighter)
+      const dotDiameter = blockWidth * (0.1 + (L * 0.9));
+      
+      // Get halftone color
+      let dotColor;
+      if (currentUseImageColors) {
+        // Use actual image color
+        dotColor = `rgb(${Math.round(processedR)},${Math.round(processedG)},${Math.round(processedB)})`;
+      } else {
+        // Use preset colors
+        dotColor = halftoneColors[colorIndex % numColors];
+        colorIndex++;
+      }
+      
+      // Create circular dot centered in fixed-width cell
+      const cellWidth = blockWidth;
+      const marginSide = (cellWidth - dotDiameter) / 2;
+      rowHtml += `<div style="background:${dotColor};width:${dotDiameter}px;height:${dotDiameter}px;border-radius:50%;margin:0 ${marginSide}px;padding:0;flex-shrink:0;"></div>`;
+    }
+    
+    rowHtml += '</div>';
+    parts.push(rowHtml);
+  }
+  
+  pre.innerHTML = parts.join('');
+}
+
 function escapeHtml(ch) {
   if (ch === '&') return '&amp;';
   if (ch === '<') return '&lt;';
@@ -441,6 +634,8 @@ function updateButtonStates() {
   btnTxt.disabled = !isBW;
   // Use visibility so the centre zone doesn't reflow when Invert is hidden
   btnInvert.classList.toggle('bw-only-hidden', !isBW);
+  // Disable BG button in halftone mode
+  btnBg.disabled = currentMode === 'halftone';
 }
 
 // ── Persist settings ──
@@ -462,7 +657,16 @@ function saveSettings() {
       rowDensity: currentRowDensity,
       colDensity: currentColDensity,
       hGap: currentHGap,
-      orientation: currentOrientation
+      orientation: currentOrientation,
+      // Halftone mode settings
+      colorImprovement: currentColorImprovement,
+      improvementLevel: currentImprovementLevel,
+      overallStyle: currentOverallStyle,
+      halftoneSize: currentHalftoneSize,
+      halftoneColors: currentHalftoneColors,
+      halftoneBgColor: currentHalftoneBgColor,
+      transparentPng: currentTransparentPng,
+      useImageColors: currentUseImageColors
     }
   });
 }
@@ -486,6 +690,14 @@ function loadSettings() {
         currentColDensity = s.colDensity ?? DEFAULTS.colDensity;
         currentHGap = s.hGap ?? DEFAULTS.hGap;
         currentOrientation = s.orientation ?? DEFAULTS.orientation;
+        currentColorImprovement = s.colorImprovement ?? DEFAULTS.colorImprovement;
+        currentImprovementLevel = s.improvementLevel ?? DEFAULTS.improvementLevel;
+        currentOverallStyle = s.overallStyle ?? DEFAULTS.overallStyle;
+        currentHalftoneSize = s.halftoneSize ?? DEFAULTS.halftoneSize;
+        currentHalftoneColors = s.halftoneColors ?? [...DEFAULTS.halftoneColors];
+        currentHalftoneBgColor = s.halftoneBgColor ?? DEFAULTS.halftoneBgColor;
+        currentTransparentPng = s.transparentPng ?? DEFAULTS.transparentPng;
+        currentUseImageColors = s.useImageColors ?? DEFAULTS.useImageColors;
         currentMode     = s.mode      ?? 'bw';
       }
       resolve();
@@ -525,12 +737,36 @@ function syncUI() {
     radio.checked = radio.value === currentOrientation;
   });
 
+  // Halftone mode controls
+  colorImprovementSelect.value = currentColorImprovement;
+  improvementLevelSelect.value = currentImprovementLevel;
+  overallStyleSelect.value = currentOverallStyle;
+  halftoneSizeSelect.value = currentHalftoneSize;
+  halftoneColorChecks.forEach(check => {
+    check.checked = currentHalftoneColors.includes(check.value);
+  });
+  halftoneBgColorRadios.forEach(radio => {
+    radio.checked = radio.value === currentHalftoneBgColor;
+  });
+  transparentPngCheckbox.checked = currentTransparentPng;
+  halftoneColorPicker.value = currentHalftoneColors[0] || '#000000';
+  halftoneBgColorPicker.value = currentHalftoneBgColor;
+  useImageColorsCheckbox.checked = currentUseImageColors;
+  // Disable color checkboxes when using image colors
+  halftoneColorChecks.forEach(check => {
+    check.disabled = currentUseImageColors;
+  });
+  halftoneColorPicker.disabled = currentUseImageColors;
+  
   btnInvert.classList.toggle('active', currentInvert);
 
   modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
   
   // Set body data-mode for CSS
   document.body.dataset.mode = currentMode;
+
+  // Disable BG button in halftone mode
+  btnBg.disabled = currentMode === 'halftone';
 
   applyBg();
   applyZoom();
@@ -569,7 +805,17 @@ btnBg.addEventListener('click', () => {
 // ── Reset ──
 btnReset.addEventListener('click', () => {
   // Reset only current mode's settings
-  if (currentMode === 'custom') {
+  if (currentMode === 'halftone') {
+    currentColorImprovement = DEFAULTS.colorImprovement;
+    currentImprovementLevel = DEFAULTS.improvementLevel;
+    currentOverallStyle = DEFAULTS.overallStyle;
+    currentHalftoneSize = DEFAULTS.halftoneSize;
+    currentHalftoneColors = [...DEFAULTS.halftoneColors];
+    currentHalftoneBgColor = DEFAULTS.halftoneBgColor;
+    currentTransparentPng = DEFAULTS.transparentPng;
+    currentUseImageColors = DEFAULTS.useImageColors;
+    currentZoom = DEFAULTS.zoom;
+  } else if (currentMode === 'custom') {
     currentBlockColors = [...DEFAULTS.blockColors];
     currentBgColorCustom = DEFAULTS.bgColor;
     currentRowDensity = DEFAULTS.rowDensity;
@@ -707,8 +953,83 @@ presetBtns.forEach(btn => {
   });
 });
 
+// Halftone mode controls
+colorImprovementSelect.addEventListener('change', () => {
+  currentColorImprovement = parseInt(colorImprovementSelect.value, 10);
+  scheduleRender();
+});
+
+improvementLevelSelect.addEventListener('change', () => {
+  currentImprovementLevel = parseInt(improvementLevelSelect.value, 10);
+  scheduleRender();
+});
+
+overallStyleSelect.addEventListener('change', () => {
+  currentOverallStyle = overallStyleSelect.value;
+  scheduleRender();
+});
+
+halftoneSizeSelect.addEventListener('change', () => {
+  currentHalftoneSize = parseInt(halftoneSizeSelect.value, 10);
+  scheduleRender();
+});
+
+halftoneColorChecks.forEach(check => {
+  check.addEventListener('change', () => {
+    currentHalftoneColors = Array.from(halftoneColorChecks)
+      .filter(c => c.checked)
+      .map(c => c.value);
+    if (currentHalftoneColors.length === 0) {
+      currentHalftoneColors = ['#000000']; // Default to black if none selected
+      check.checked = true;
+    }
+    scheduleRender();
+  });
+});
+
+halftoneBgColorRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (radio.checked) {
+      currentHalftoneBgColor = radio.value;
+      scheduleRender();
+    }
+  });
+});
+
+transparentPngCheckbox.addEventListener('change', () => {
+  currentTransparentPng = transparentPngCheckbox.checked;
+});
+
+// Halftone color picker - adds custom color to selected colors
+halftoneColorPicker.addEventListener('input', () => {
+  const customColor = halftoneColorPicker.value;
+  if (!currentHalftoneColors.includes(customColor)) {
+    currentHalftoneColors.push(customColor);
+  }
+  scheduleRender();
+});
+
+// Halftone background color picker
+halftoneBgColorPicker.addEventListener('input', () => {
+  currentHalftoneBgColor = halftoneBgColorPicker.value;
+  // Uncheck all radio buttons when using custom color
+  halftoneBgColorRadios.forEach(radio => radio.checked = false);
+  scheduleRender();
+});
+
+// Use image colors checkbox
+useImageColorsCheckbox.addEventListener('change', () => {
+  currentUseImageColors = useImageColorsCheckbox.checked;
+  // Disable color checkboxes when using image colors
+  halftoneColorChecks.forEach(check => {
+    check.disabled = currentUseImageColors;
+  });
+  halftoneColorPicker.disabled = currentUseImageColors;
+  scheduleRender();
+});
+
 function applyZoom() {
-  if (currentMode === 'glitch' || currentMode === 'custom') {
+  if (currentMode === 'glitch' || currentMode === 'halftone' || currentMode === 'custom') {
     pre.style.transform = `scale(${currentZoom / 100})`;
     pre.style.transformOrigin = 'top left';
   } else {
@@ -768,6 +1089,24 @@ btnHtml.addEventListener('click', () => {
     line-height: 1em; 
     background: ${currentBgColorCustom}; 
     color: ${currentBlockColors[0]}; 
+    white-space: pre; 
+    padding: 0; 
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }`;
+    content = pre.innerHTML;
+  } else if (currentMode === 'halftone') {
+    // Halftone mode needs specific CSS for flexbox layout
+    css = `
+  body { margin: 0; background: ${currentHalftoneBgColor}; }
+  pre { 
+    font-family: monospace; 
+    font-size: ${currentFontSize}px; 
+    line-height: 1em; 
+    background: ${currentHalftoneBgColor}; 
+    color: ${currentHalftoneColors[0]}; 
     white-space: pre; 
     padding: 0; 
     margin: 0;
@@ -922,6 +1261,147 @@ function savePNG() {
 
       currentY += rowHeight;
     }
+  } else if (currentMode === 'halftone') {
+    const dotSize = currentHalftoneSize;
+    const halftoneCols = Math.floor(cols / (dotSize / 12));
+    const halftoneRows = rows;
+    const totalWidth = cols * currentFontSize;
+    const originalAspectRatio = imgWidth / imgHeight;
+    const totalHeight = totalWidth / originalAspectRatio; // Force correct aspect ratio
+    const rowHeight = totalHeight / halftoneRows;
+    const blockWidth = totalWidth / halftoneCols;
+
+    canvas = document.createElement('canvas');
+    canvas.width = totalWidth;
+    canvas.height = totalHeight;
+    ctx = canvas.getContext('2d');
+
+    // Set background color or transparent
+    if (currentTransparentPng) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = currentHalftoneBgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Pre-calculate constants
+    const halftoneColors = currentHalftoneColors;
+    const numColors = halftoneColors.length;
+    let colorIndex = 0;
+
+    for (let row = 0; row < halftoneRows; row++) {
+      for (let col = 0; col < halftoneCols; col++) {
+        const srcCol = Math.floor(col * cols / halftoneCols);
+        const srcRow = Math.floor(row * rows / halftoneRows);
+        const { r, g, b } = samplePixel(srcCol, srcRow, cols, rows);
+
+        // Apply color improvement based on setting
+        let processedR = r, processedG = g, processedB = b;
+        
+        if (currentColorImprovement > 0) {
+          switch(parseInt(currentColorImprovement)) {
+            case 1: // Strong
+              processedR = Math.min(255, r * 1.5);
+              processedG = Math.min(255, g * 1.5);
+              processedB = Math.min(255, b * 1.5);
+              break;
+            case 2: // Privilege bright
+              if (r + g + b > 382) {
+                processedR = Math.min(255, r * 1.3);
+                processedG = Math.min(255, g * 1.3);
+                processedB = Math.min(255, b * 1.3);
+              }
+              break;
+            case 3: // Privilege dark
+              if (r + g + b < 382) {
+                processedR = Math.min(255, r * 1.3);
+                processedG = Math.min(255, g * 1.3);
+                processedB = Math.min(255, b * 1.3);
+              }
+              break;
+            case 4: // Smart
+              const avg = (r + g + b) / 3;
+              if (avg > 128) {
+                processedR = Math.min(255, r * 1.2);
+                processedG = Math.min(255, g * 1.2);
+                processedB = Math.min(255, b * 1.2);
+              }
+              break;
+            case 5: // Smart channels
+              if (r > g && r > b) processedR = Math.min(255, r * 1.2);
+              else if (g > r && g > b) processedG = Math.min(255, g * 1.2);
+              else if (b > r && b > g) processedB = Math.min(255, b * 1.2);
+              break;
+            case 6: // Hot colors
+              if (r > g && r > b) {
+                processedR = Math.min(255, r * 1.5);
+                processedG = Math.max(0, g * 0.8);
+                processedB = Math.max(0, b * 0.8);
+              }
+              break;
+            case 7: // Smart hot
+              if (r > g && r > b && r > 150) {
+                processedR = Math.min(255, r * 1.4);
+                processedG = Math.max(0, g * 0.7);
+                processedB = Math.max(0, b * 0.7);
+              }
+              break;
+            case 8: // Pastel
+              processedR = Math.min(255, r + (255 - r) * 0.3);
+              processedG = Math.min(255, g + (255 - g) * 0.3);
+              processedB = Math.min(255, b + (255 - b) * 0.3);
+              break;
+          }
+        }
+        
+        // Apply improvement level
+        const levelFactor = 1 + (currentImprovementLevel - 1) * 0.1;
+        if (currentColorImprovement > 0 && currentColorImprovement !== 8) {
+          processedR = Math.min(255, processedR * levelFactor);
+          processedG = Math.min(255, processedG * levelFactor);
+          processedB = Math.min(255, processedB * levelFactor);
+        }
+        
+        // Apply overall style
+        if (currentOverallStyle === 'bright') {
+          processedR = Math.min(255, processedR + (255 - processedR) * 0.2);
+          processedG = Math.min(255, processedG + (255 - processedG) * 0.2);
+          processedB = Math.min(255, processedB + (255 - processedB) * 0.2);
+        }
+        
+        // Calculate brightness for dot size
+        const brightness = (processedR + processedG + processedB) / 3;
+        let L = brightness / 255;
+        L = Math.pow(L, 1 / currentContrast);
+        if (currentInvert) L = 1 - L;
+        
+        // Dot size based on brightness (larger = brighter)
+        const dotDiameter = blockWidth * (0.1 + (L * 0.9));
+        
+        // Get halftone color
+        let dotColor;
+        if (currentUseImageColors) {
+          // Use actual image color
+          dotColor = `rgb(${Math.round(processedR)},${Math.round(processedG)},${Math.round(processedB)})`;
+        } else {
+          // Use preset colors
+          dotColor = halftoneColors[colorIndex % numColors];
+          colorIndex++;
+        }
+        
+        // Draw circular dot centered in fixed-width cell
+        const cellWidth = blockWidth;
+        const marginSide = (cellWidth - dotDiameter) / 2;
+        const centerX = col * blockWidth + blockWidth / 2;
+        const centerY = row * rowHeight + rowHeight / 2;
+        const radius = dotDiameter / 2;
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.fillStyle = dotColor;
+        ctx.fill();
+      }
+    }
   } else {
     canvas = document.createElement('canvas');
     canvas.width  = cols * charW;
@@ -952,7 +1432,12 @@ function savePNG() {
   }
 
   canvas.toBlob(blob => {
-    if (blob) triggerDownload(blob, 'textify.png');
+    if (blob) {
+      const filename = currentMode === 'halftone' && currentTransparentPng 
+        ? 'textify-transparent.png' 
+        : 'textify.png';
+      triggerDownload(blob, filename);
+    }
   }, 'image/png');
 }
 

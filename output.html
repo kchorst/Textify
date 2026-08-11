@@ -15,6 +15,7 @@
       <button class="mode-btn active" data-mode="bw">BW</button>
       <button class="mode-btn" data-mode="color-ascii">Color ASCII</button>
       <button class="mode-btn" data-mode="color-block">Color Block</button>
+      <button class="mode-btn" data-mode="halftone">Half-Tone</button>
       <button class="mode-btn" data-mode="glitch">Glitch</button>
       <button class="mode-btn" data-mode="custom">Custom</button>
     </div>
@@ -54,6 +55,88 @@
       <label for="zoom-slider">Zoom</label>
       <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100" />
       <span class="control-val" id="zoom-val">100%</span>
+    </div>
+    <div class="control-row halftone-only halftone-full-width">
+      <label for="color-improvement">Color Improvement</label>
+      <select id="color-improvement">
+        <option value="0">None</option>
+        <option value="1">Strong</option>
+        <option value="2">Privilege bright</option>
+        <option value="3">Privilege dark</option>
+        <option value="4">Smart</option>
+        <option value="5">Smart channels</option>
+        <option value="6">Hot colors</option>
+        <option value="7">Smart hot</option>
+        <option value="8">Pastel</option>
+      </select>
+    </div>
+    <div class="control-row halftone-only">
+      <label for="improvement-level">Improvement Level</label>
+      <select id="improvement-level">
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+    </div>
+    <div class="control-row halftone-only">
+      <label for="overall-style">Overall Style</label>
+      <select id="overall-style">
+        <option value="bright">Bright</option>
+        <option value="dark" selected>Dark</option>
+      </select>
+    </div>
+    <div class="control-row halftone-only halftone-full-width">
+      <label for="halftone-size">Halftone Size</label>
+      <select id="halftone-size">
+        <option value="1">Micro</option>
+        <option value="2">Nano</option>
+        <option value="3">Tiny</option>
+        <option value="5">Very small</option>
+        <option value="7" selected>Small</option>
+        <option value="9">Average</option>
+        <option value="12">Big</option>
+        <option value="15">Very big</option>
+        <option value="20">Huge</option>
+        <option value="30">Massive</option>
+        <option value="40">Giant</option>
+        <option value="50">Colossal</option>
+      </select>
+    </div>
+    <div class="control-row halftone-only halftone-full-width">
+      <label>Halftone Color</label>
+      <div class="color-checkboxes">
+        <label><input type="checkbox" id="use-image-colors" /> Use image colors</label>
+        <label><input type="checkbox" class="halftone-color-check" value="#ff0000" checked /> Red</label>
+        <label><input type="checkbox" class="halftone-color-check" value="#00ffff" /> Cyan</label>
+        <label><input type="checkbox" class="halftone-color-check" value="#0000ff" /> Blue</label>
+        <label><input type="checkbox" class="halftone-color-check" value="#ffff00" /> Yellow</label>
+        <label><input type="checkbox" class="halftone-color-check" value="#000000" /> Black</label>
+        <label><input type="checkbox" class="halftone-color-check" value="#ffffff" /> White</label>
+        <input type="color" id="halftone-color-picker" value="#000000" style="width:40px;height:25px;margin-left:10px;cursor:pointer;" />
+      </div>
+    </div>
+    <div class="control-row halftone-only halftone-full-width">
+      <label>Back Color</label>
+      <div class="color-checkboxes">
+        <label><input type="radio" name="halftone-bg-color" value="#ff0000" /> Red</label>
+        <label><input type="radio" name="halftone-bg-color" value="#00ffff" /> Cyan</label>
+        <label><input type="radio" name="halftone-bg-color" value="#0000ff" /> Blue</label>
+        <label><input type="radio" name="halftone-bg-color" value="#ffff00" /> Yellow</label>
+        <label><input type="radio" name="halftone-bg-color" value="#000000" checked /> Black</label>
+        <label><input type="radio" name="halftone-bg-color" value="#ffffff" /> White</label>
+        <input type="color" id="halftone-bg-color-picker" value="#ffffff" style="width:40px;height:25px;margin-left:10px;cursor:pointer;" />
+      </div>
+    </div>
+    <div class="control-row halftone-only">
+      <label for="transparent-png">Transparent PNG</label>
+      <input type="checkbox" id="transparent-png" />
     </div>
     <div class="control-row custom-only custom-full-width">
       <label>Block Colors</label>
