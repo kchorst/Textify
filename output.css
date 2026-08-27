@@ -174,6 +174,21 @@ html, body {
   gap: 10px;
 }
 
+.width-universal {
+  display: none;
+}
+
+body[data-mode="bw"] .width-universal,
+body[data-mode="color-ascii"] .width-universal,
+body[data-mode="color-block"] .width-universal,
+body[data-mode="glitch"] .width-universal,
+body[data-mode="halftone"] .width-universal,
+body[data-mode="custom"] .width-universal,
+body[data-mode="stipple"] .width-universal,
+body[data-mode="single-line"] .width-universal {
+  display: flex;
+}
+
 .control-row label {
   font-size: 12px;
   color: #888;
@@ -181,10 +196,42 @@ html, body {
   flex-shrink: 0;
 }
 
+.font-size-row {
+  display: none;
+}
+
+body[data-mode="bw"] .font-size-row,
+body[data-mode="color-ascii"] .font-size-row,
+body[data-mode="color-block"] .font-size-row,
+body[data-mode="custom"] .font-size-row,
+body[data-mode="glitch"] .font-size-row,
+body[data-mode="halftone"] .font-size-row {
+  display: flex;
+}
+
+body[data-mode="stipple"] .font-size-row,
+body[data-mode="single-line"] .font-size-row {
+  display: none;
+}
+
 .control-row input[type="range"] {
   flex: 1;
   accent-color: #00ffcc;
   cursor: pointer;
+}
+
+.inline-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #aaa;
+  font-size: 12px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.inline-toggle input {
+  accent-color: #00ffcc;
 }
 
 .control-val {
@@ -216,9 +263,30 @@ body[data-mode="custom"] .spacer-only {
   display: none;
 }
 
+body[data-mode="bw"] .zoom-only,
+body[data-mode="color-ascii"] .zoom-only,
+body[data-mode="color-block"] .zoom-only,
 body[data-mode="glitch"] .zoom-only,
 body[data-mode="halftone"] .zoom-only,
-body[data-mode="custom"] .zoom-only {
+body[data-mode="custom"] .zoom-only,
+body[data-mode="stipple"] .zoom-only,
+body[data-mode="single-line"] .zoom-only {
+  display: flex;
+}
+
+.stipple-only {
+  display: none;
+}
+
+body[data-mode="stipple"] .stipple-only {
+  display: flex;
+}
+
+.single-line-only {
+  display: none;
+}
+
+body[data-mode="single-line"] .single-line-only {
   display: flex;
 }
 
@@ -469,4 +537,144 @@ body[data-mode="halftone"] #controls select:focus {
 .orientation-toggle input[type="radio"] {
   accent-color: #ffaa00;
   cursor: pointer;
+}
+
+/* RC93 — unified control architecture.
+   Width / Contrast / Zoom remain a fixed vertical stack on the left. Mode
+   transformation controls occupy the right. Color controls stay together at
+   the bottom. Singleton boolean choices are bottom-row state buttons. */
+#controls {
+  display: grid !important;
+  grid-template-columns: minmax(300px, 0.9fr) minmax(520px, 1.7fr);
+  grid-template-areas:
+    "standard transform"
+    "colors colors"
+    "save save";
+  gap: 6px 14px !important;
+  padding: 7px 12px !important;
+  max-height: 238px;
+  overflow-y: auto;
+}
+
+.control-group { min-width: 0; }
+.standard-group {
+  grid-area: standard;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  align-content: start;
+}
+.transform-group {
+  grid-area: transform;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 12px;
+  align-content: start;
+}
+.color-group {
+  grid-area: colors;
+  display: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 14px;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 5px;
+}
+body[data-mode="stipple"] .color-group,
+body[data-mode="single-line"] .color-group,
+body[data-mode="halftone"] .color-group,
+body[data-mode="custom"] .color-group { display: grid; }
+
+#controls .control-row {
+  min-width: 0;
+  gap: 7px;
+}
+#controls .control-row label {
+  width: 100px;
+  min-width: 100px;
+  line-height: 1.08;
+}
+#controls .standard-group .control-row label {
+  width: 70px;
+  min-width: 70px;
+}
+#controls .control-val { width: 44px; }
+#controls .color-value { width: 62px; text-align: left; }
+#controls select { min-width: 0; width: 100%; max-width: 100%; padding: 3px 6px; }
+
+/* Contextual style controls: exactly the selected style's controls appear. */
+body[data-mode="stipple"] .stipple-only.stipple-style-control,
+body[data-mode="single-line"] .single-line-only.tsp-style-control { display: none; }
+body[data-mode="stipple"][data-stipple-style="classic"] .stipple-style-control[data-stipple-style="classic"],
+body[data-mode="stipple"][data-stipple-style="voronoi"] .stipple-style-control[data-stipple-style="voronoi"],
+body[data-mode="stipple"][data-stipple-style="dithered"] .stipple-style-control[data-stipple-style="dithered"],
+body[data-mode="stipple"][data-stipple-style="structure"] .stipple-style-control[data-stipple-style="structure"],
+body[data-mode="single-line"][data-tsp-style="classic"] .tsp-style-control[data-tsp-style="classic"],
+body[data-mode="single-line"][data-tsp-style="voronoi"] .tsp-style-control[data-tsp-style="voronoi"],
+body[data-mode="single-line"][data-tsp-style="dithered"] .tsp-style-control[data-tsp-style="dithered"],
+body[data-mode="single-line"][data-tsp-style="textured"] .tsp-style-control[data-tsp-style="textured"] { display: flex; }
+
+/* Compact bottom color grouping. */
+.color-group .color-control { align-items: center; }
+.color-group input[type="color"] {
+  width: 54px;
+  height: 27px;
+  padding: 1px;
+  border: 1px solid #555;
+  background: #161616;
+  cursor: pointer;
+}
+.color-group .palette-control { align-items: center; }
+.color-group .color-checkboxes {
+  margin-left: 0;
+  gap: 3px 8px;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.color-group .color-checkboxes label {
+  width: auto !important;
+  min-width: 0 !important;
+  white-space: nowrap;
+  font-size: 10px;
+}
+.color-group .color-checkboxes input[type="color"] {
+  width: 38px;
+  height: 23px;
+}
+
+#save-row {
+  grid-area: save;
+  grid-column: 1 / -1 !important;
+  margin-top: 0;
+}
+.utility-zone { gap: 6px; flex-wrap: wrap; justify-content: center; }
+.state-btn.active {
+  color: #00ffcc;
+  border-color: #00ffcc88;
+  background: #00ffcc12;
+}
+#btn-transparent { display: none; }
+body[data-mode="halftone"] #btn-transparent { display: inline-block; }
+#btn-invert { display: none; }
+body[data-mode="bw"] #btn-invert { display: inline-block; }
+
+/* The hidden checkbox mirrors consume no layout space. */
+#inverse-image[hidden], #transparent-png[hidden] { display: none !important; }
+
+@media (max-width: 1100px) {
+  #controls {
+    grid-template-columns: minmax(270px, 0.85fr) minmax(390px, 1.4fr);
+    max-height: 285px;
+  }
+  .transform-group { grid-template-columns: 1fr; }
+  .color-group { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  #controls {
+    grid-template-columns: 1fr;
+    grid-template-areas: "standard" "transform" "colors" "save";
+    max-height: 360px;
+  }
+  .transform-group, .color-group { grid-template-columns: 1fr; }
 }

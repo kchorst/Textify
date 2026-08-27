@@ -1,85 +1,99 @@
 # Textify
 
-Textify is a browser extension that allows you to convert images from any webpage into ASCII art directly in your browser.
+**Version 4.47.1 — release build**
 
-## Latest Update: Half-Tone Mode
-**NEW:** Added Half-Tone mode - a traditional halftone dot pattern rendering mode with comprehensive color control and image processing options.
+Textify is a Manifest V3 browser extension that converts images found on webpages into stylized text and graphic renditions. It runs locally in the browser and includes eight transformation modes:
 
-**Credit:** The halftone effect in Half-Tone mode is inspired by the online halftone image generator at **Picture to People** (https://www.picturetopeople.org/image_effects/photo-halftone/halftone-image-generator.html). This tool provides advanced halftone photo effects with customizable parameters for artistic image transformation.
+- **BW** — monochrome ASCII text
+- **Color ASCII** — ASCII characters colored from the source image
+- **Color Block** — full block characters colored from the source image
+- **Half-Tone** — circular halftone dots with palette and color-improvement controls
+- **Glitch** — red/cyan bar treatment
+- **Stipple** — four dot-distribution styles
+- **Single-Line** — four TSP/continuous-line styles
+- **Custom** — configurable block density, orientation, spacing, and colors
 
-**Half-Tone Mode Features:**
-- **Color Improvement:** 9 processing options (None, Strong, Privilege bright/dark, Smart, Smart channels, Hot colors, Smart hot, Pastel) to enhance image colors before dot sizing
-- **Improvement Level:** Adjustable intensity (1-10) for color processing effects
-- **Overall Style:** Bright/Dark toggle for global brightness adjustment
-- **Halftone Size:** 12 size options (Micro to Colossal) for dramatic dot size control
-- **Color Options:** Use actual image colors or choose from preset colors (Red, Cyan, Blue, Yellow, Black, White) with color picker support
-- **Background Color:** Choose from preset colors or use color picker for custom backgrounds
-- **Transparent PNG Export:** Option to export halftone as transparent PNG file
-- **Zoom Control:** Scale the rendered output (10-100%)
-- **Preserves Aspect Ratio:** Maintains original image proportions in both preview and export
+## Release status
 
-**Half-Tone Mode Tips:**
-- **Use Image Colors:** Check "Use image colors" to use the actual RGB colors from your image for the halftone dots
-- **Color Improvement:** Try "Strong" or "Hot colors" with colorful images for dramatic effects
-- **Improvement Level:** Set to 5-8 for moderate effects, 9-10 for intense color processing
-- **Size Control:** Use "Micro" for fine detail, "Colossal" for bold artistic effects
-- **Best Subjects:** Colorful photographs work best with image colors enabled
-- **Background:** Choose contrasting background color for better visibility
+Version 4.47.1 promotes the RC93 rendering/UI state to release. The accepted rendering engine, defaults, control ranges, and UI are unchanged from RC93. The only runtime change after RC93 is a Manifest V3 service-worker hardening fix so toolbar overlay toggling remains reliable after the background worker is suspended or restarted.
 
-## Previous Update: Custom Mode
-**Credit:** The slit vision effect in Custom mode is inspired by the visual illusion research of **Professor Akiyoshi Kitaoka** from Ritsumeikan University, Osaka, Japan. His pioneering work on visual perception and optical illusions has inspired countless artists and researchers. Learn more at: https://www.ritsumei.ac.jp/~akitaoka/index-e.html
+The release also removes development-history files from the shipping package and replaces the corrupted RC license file with a valid PolyForm Noncommercial 1.0.0 notice.
 
-**Custom Mode Features:**
-- **Color Selection:** Choose multiple block colors (Red, Cyan, Blue, Yellow, Black, White) that cycle through the rendering
-- **Background Color:** Select any of 6 preset colors for the background
-- **Density Control:** Adjust row and column density with Coarse/Medium/Fine presets for fine-grained control
-- **Gap Control:** Set horizontal and vertical gaps between blocks/rows
-- **Orientation:** Toggle between horizontal (variable height blocks) and vertical (variable width blocks) slit patterns
-- **Zoom:** Scale the rendered output (10-100%)
-- **Preserves Dimensions:** All rendering maintains the original image's width and height
+## Install from source
 
-**Custom Mode Tips:**
-- **Best Subjects:** Portraits and detailed images work well with custom mode
-- **Color Combinations:** Try Red/Cyan for classic slit vision, or Blue/Yellow for high contrast
-- **Density:** Start with Medium density (50/60) and adjust based on image complexity
-- **Gaps:** Use horizontal gaps to separate blocks, spacer rows for vertical spacing
-- **Orientation:** Horizontal is traditional slit vision; vertical creates a different aesthetic
+1. Download or clone this repository.
+2. Open your Chromium-based browser's Extensions page.
+3. Enable **Developer mode**.
+4. Choose **Load unpacked**.
+5. Select the repository folder containing `manifest.json`.
+6. Open a normal webpage containing images.
+7. Click the Textify toolbar icon, then click a highlighted image.
 
-## License: Non-Commercial Use Only
+Textify ignores images smaller than 100 × 100 pixels. Images larger than 1000 pixels on their longest side are downscaled for processing.
 
-This repository contains source-available code and utilities strictly governed by the **PolyForm Noncommercial License 1.0.0**.
+## Shared controls
 
-* **Allowed:** Free for personal experimentation, individual learning, testing, and academic research.
-* **Prohibited:** Commercial use, corporate deployment, resale, or monetization of this software in a business environment is strictly forbidden.
+The release UI keeps **Width**, **Contrast**, and **Zoom** together in a fixed standard-control group. Transformation-specific controls are grouped separately, and color controls are grouped at the bottom. **Negative** and **Transparent PNG** are toggle buttons rather than standalone checkbox rows.
 
-For the full binding legal text, please see the accompanying [LICENSE.md](LICENSE.md) file.
+Zoom is presentation-only for Stipple and Single-Line: changing Zoom does not recompute vector geometry.
 
-## Features
-* **Multiple Rendering Modes:**
-    * **BW:** Traditional black and white ASCII art.
-    * **Color ASCII:** Colored characters based on the source image pixels.
-    * **Color Block:** A block-based representation that retains image color and density.
-    * **Half-Tone:** Traditional halftone dot pattern with color improvement, image color support, and customizable dot sizes.
-    * **Glitch:** Red/cyan block-based rendering with variable heights and alternating colors for a glitched aesthetic.
-    * **Custom:** Fully customizable slit vision mode with color selection, density control, gaps, and orientation toggle.
-* **Customization:** Adjust font size, width, contrast, and toggle between light/dark backgrounds. Glitch, Half-Tone, and Custom modes include zoom control. Custom and Half-Tone modes include comprehensive parameter control.
-* **Export Options:** * Copy the result to your clipboard.
-    * Save as a `.txt` file (BW mode only).
-    * Save as a standalone `.html` file (all modes).
-    * Save as a `.png` image (all modes, with transparent PNG option for Half-Tone mode).
+## Stipple styles
 
-## Usage
-1. Click the **Textify icon** in your browser toolbar to activate the extension on the current page.
-2. Hover over any image on the page to see the `[ TEXTIFY ]` overlay.
-3. Click the overlay to open the rendering dashboard.
-4. Use the controls in the dashboard to refine the ASCII output to your liking.
-5. Use the buttons at the bottom to copy or save your creation.
+1. Classic / Adaptive
+2. Blue Noise / Poisson
+3. Dithered / Bayer
+4. Structure / Contour
 
-## Limitations
-* **CORS Restrictions:** Images that do not have appropriate Cross-Origin Resource Sharing (CORS) headers cannot be processed, as the browser prevents reading pixel data from them.
-* **Minimum Size:** Images smaller than 100x100 pixels will not be processed to ensure quality.
-* **Large Images:** Images with a dimension exceeding 1000px will be automatically scaled down before processing to maintain performance.
+The browser-qualified Blue Noise reset is 23,500 dots, dot size 0.8, contrast 0.7, zoom 35%, width 100%, spacing 27.
 
-## Technical Details
-* **Manifest V3:** Built using the latest Chrome extension standards.
-* **Rendering:** Uses HTML5 Canvas for pixel data extraction and custom algorithms for luminance and color-to-character mapping.
+## Single-Line / TSP styles
+
+1. Classic / Marilyn
+2. Voronoi / Organic
+3. Dithered / Maze
+4. Textured / Directional
+
+Browser-qualified release resets include:
+
+- Classic / Marilyn: 22,006 cities, 0.45 line width, contrast 0.8, zoom 40%, Tone Support 100, Feature Detail 100.
+- Voronoi / Organic: 11,225 cities, 0.95 line width, contrast 3.0, zoom 40%, Tone Contrast 100, Smoothness 100.
+- Dithered / Maze: 11,000 cities, 1.0 line width, contrast 1.3, zoom 100%.
+- Textured / Directional: 12,000 cities, 1.20 line width, contrast 1.4, zoom 30%, Direction Strength 65, Texture Scale 50.
+
+## Exports
+
+- **Copy** copies text or rendered HTML markup. For Stipple and Single-Line artwork, use PNG or HTML export.
+- **Save .txt** is available for BW ASCII.
+- **Save .html** creates a self-contained HTML rendition; vector modes embed a PNG image.
+- **Save .png** exports a raster image of the current transformation.
+- Half-Tone can export PNG with a transparent background.
+
+## Permissions
+
+Textify requests only:
+
+- `activeTab` — access the page after the user clicks the toolbar icon
+- `scripting` — inject the image-selection overlay
+- `storage` — transfer the selected image to the output tab and remember settings
+
+There are no analytics, trackers, remote APIs, or network requests in the runtime code. See `PRIVACY.md`.
+
+## Documentation
+
+- `USERSGUIDE.md` — user operation and controls
+- `PROCESS.md` — complete image-to-output transformation pipeline
+- `QA_REPORT.md` — final technical qualification results
+- `RELEASE_ACCEPTANCE.md` — release gate decision
+- `RELEASE_NOTES.md` — final release changes
+- `REFERENCES_AND_INFLUENCES.md` — research lineage, visual references, algorithmic influences, and development process
+- `ACKNOWLEDGMENTS.md` and `THIRD_PARTY_NOTICES.md` — attribution and bundled-dependency status
+- `LICENSE.md` — license notice
+- `SHA256SUMS.txt` — integrity hashes for the release source files
+
+## Research and artistic lineage
+
+The Stipple and Single-Line/TSP features were developed in conversation with established work on weighted Voronoi stippling, ordered dithering, and TSP art, plus development-only portrait references used for visual qualification. `REFERENCES_AND_INFLUENCES.md` explains what influenced Textify, what was implemented independently, how the Marilyn/Audrey/Rai reference images were used, and where the release intentionally diverges from classical closed-tour TSP art.
+
+## License
+
+Textify is distributed under the **PolyForm Noncommercial License 1.0.0**. See `LICENSE.md`.

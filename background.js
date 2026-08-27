@@ -1,46 +1,40 @@
 // background.js — Textify service worker
+// Release hardening: do not rely on in-memory tab tracking because Manifest V3
+// service workers may be suspended and restarted at any time.
 
-// Track injected tabs to handle re-injection gracefully
-const injectedTabs = new Set();
-
-// Toolbar icon click — inject content script into active tab or toggle overlays
 chrome.action.onClicked.addListener(async (tab) => {
   if (!tab.id) return;
 
-  // Guard: don't inject into chrome:// or extension pages
-  if (!tab.url || tab.url.startsWith('chrome') || tab.url.startsWith('chrome-extension')) {
+  // Guard: Chrome internal/extension pages cannot accept normal script injection.
+  if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
     return;
   }
 
+  // First try the existing content-script listener. This remains reliable even
+  // after the service worker itself has restarted.
   try {
-    if (injectedTabs.has(tab.id)) {
-      // Already injected - send toggle message
-      chrome.tabs.sendMessage(tab.id, { action: 'toggle_overlays' });
-    } else {
-      // First time - inject scripts
-      await chrome.scripting.insertCSS({
-        target: { tabId: tab.id },
-        files: ['content.css']
-      });
+    const response = await chrome.tabs.sendMessage(tab.id, { action: 'toggle_overlays' });
+    if (response && response.ok) return;
+  } catch (_) {
+    // No listener in this page yet: inject below.
+  }
 
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content.js']
-      });
+  try {
+    await chrome.scripting.insertCSS({
+      target: { tabId: tab.id },
+      files: ['content.css']
+    });
 
-      injectedTabs.add(tab.id);
-    }
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js']
+    });
   } catch (err) {
     console.error('Textify: injection failed', err);
   }
 });
 
-// Clean up tracking when tab closes
-chrome.tabs.onRemoved.addListener((tabId) => {
-  injectedTabs.delete(tabId);
-});
-
-// Message listener — content.js sends 'open_output' after storing pixel data
+// content.js sends 'open_output' after storing the selected image payload.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'open_output') {
     const outputUrl = chrome.runtime.getURL('output.html');

@@ -17,6 +17,8 @@
       <button class="mode-btn" data-mode="color-block">Color Block</button>
       <button class="mode-btn" data-mode="halftone">Half-Tone</button>
       <button class="mode-btn" data-mode="glitch">Glitch</button>
+      <button class="mode-btn" data-mode="stipple">Stipple</button>
+      <button class="mode-btn" data-mode="single-line">Single-Line</button>
       <button class="mode-btn" data-mode="custom">Custom</button>
     </div>
   </div>
@@ -29,188 +31,265 @@
     <pre id="ascii-output"></pre>
   </div>
 
-  <!-- Controls panel -->
+  <!-- Controls panel: RC93 unified architecture -->
   <div id="controls">
-    <div class="control-row">
-      <label for="font-size-slider">Font Size</label>
-      <input type="range" id="font-size-slider" min="8" max="24" step="1" value="12" />
-      <span class="control-val" id="font-size-val">12px</span>
-    </div>
-    <div class="control-row">
-      <label for="width-slider">Width</label>
-      <input type="range" id="width-slider" min="10" max="100" step="5" value="100" />
-      <span class="control-val" id="width-val">100%</span>
-    </div>
-    <div class="control-row">
-      <label for="contrast-slider">Contrast</label>
-      <input type="range" id="contrast-slider" min="0.5" max="3.0" step="0.1" value="1.0" />
-      <span class="control-val" id="contrast-val">1.0</span>
-    </div>
-    <div class="control-row spacer-only">
-      <label for="spacer-slider">Spacer Rows</label>
-      <input type="range" id="spacer-slider" min="0" max="5" step="1" value="0" />
-      <span class="control-val" id="spacer-val">0</span>
-    </div>
-    <div class="control-row zoom-only">
-      <label for="zoom-slider">Zoom</label>
-      <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100" />
-      <span class="control-val" id="zoom-val">100%</span>
-    </div>
-    <div class="control-row halftone-only halftone-full-width">
-      <label for="color-improvement">Color Improvement</label>
-      <select id="color-improvement">
-        <option value="0">None</option>
-        <option value="1">Strong</option>
-        <option value="2">Privilege bright</option>
-        <option value="3">Privilege dark</option>
-        <option value="4">Smart</option>
-        <option value="5">Smart channels</option>
-        <option value="6">Hot colors</option>
-        <option value="7">Smart hot</option>
-        <option value="8">Pastel</option>
-      </select>
-    </div>
-    <div class="control-row halftone-only">
-      <label for="improvement-level">Improvement Level</label>
-      <select id="improvement-level">
-        <option value="1">1</option>
-        <option value="2" selected>2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-      </select>
-    </div>
-    <div class="control-row halftone-only">
-      <label for="overall-style">Overall Style</label>
-      <select id="overall-style">
-        <option value="bright">Bright</option>
-        <option value="dark" selected>Dark</option>
-      </select>
-    </div>
-    <div class="control-row halftone-only halftone-full-width">
-      <label for="halftone-size">Halftone Size</label>
-      <select id="halftone-size">
-        <option value="1">Micro</option>
-        <option value="2">Nano</option>
-        <option value="3">Tiny</option>
-        <option value="5">Very small</option>
-        <option value="7" selected>Small</option>
-        <option value="9">Average</option>
-        <option value="12">Big</option>
-        <option value="15">Very big</option>
-        <option value="20">Huge</option>
-        <option value="30">Massive</option>
-        <option value="40">Giant</option>
-        <option value="50">Colossal</option>
-      </select>
-    </div>
-    <div class="control-row halftone-only halftone-full-width">
-      <label>Halftone Color</label>
-      <div class="color-checkboxes">
-        <label><input type="checkbox" id="use-image-colors" /> Use image colors</label>
-        <label><input type="checkbox" class="halftone-color-check" value="#ff0000" checked /> Red</label>
-        <label><input type="checkbox" class="halftone-color-check" value="#00ffff" /> Cyan</label>
-        <label><input type="checkbox" class="halftone-color-check" value="#0000ff" /> Blue</label>
-        <label><input type="checkbox" class="halftone-color-check" value="#ffff00" /> Yellow</label>
-        <label><input type="checkbox" class="halftone-color-check" value="#000000" /> Black</label>
-        <label><input type="checkbox" class="halftone-color-check" value="#ffffff" /> White</label>
-        <input type="color" id="halftone-color-picker" value="#000000" style="width:40px;height:25px;margin-left:10px;cursor:pointer;" />
+    <!-- Standard image controls are deliberately fixed in one vertical group. -->
+    <section class="control-group standard-group" aria-label="Image controls">
+      <div class="control-row width-universal">
+        <label for="width-slider">Width</label>
+        <input type="range" id="width-slider" min="50" max="200" step="5" value="100" />
+        <span class="control-val" id="width-val">100%</span>
       </div>
-    </div>
-    <div class="control-row halftone-only halftone-full-width">
-      <label>Back Color</label>
-      <div class="color-checkboxes">
-        <label><input type="radio" name="halftone-bg-color" value="#ff0000" /> Red</label>
-        <label><input type="radio" name="halftone-bg-color" value="#00ffff" /> Cyan</label>
-        <label><input type="radio" name="halftone-bg-color" value="#0000ff" /> Blue</label>
-        <label><input type="radio" name="halftone-bg-color" value="#ffff00" /> Yellow</label>
-        <label><input type="radio" name="halftone-bg-color" value="#000000" checked /> Black</label>
-        <label><input type="radio" name="halftone-bg-color" value="#ffffff" /> White</label>
-        <input type="color" id="halftone-bg-color-picker" value="#ffffff" style="width:40px;height:25px;margin-left:10px;cursor:pointer;" />
+      <div class="control-row common-contrast-row">
+        <label for="contrast-slider">Contrast</label>
+        <input type="range" id="contrast-slider" min="0.2" max="4.0" step="0.1" value="1.0" />
+        <span class="control-val" id="contrast-val">1.0</span>
       </div>
-    </div>
-    <div class="control-row halftone-only">
-      <label for="transparent-png">Transparent PNG</label>
-      <input type="checkbox" id="transparent-png" />
-    </div>
-    <div class="control-row custom-only custom-full-width">
-      <label>Block Colors</label>
-      <div class="color-checkboxes">
-        <label><input type="checkbox" class="block-color-check" value="#ff0000" checked /> Red</label>
-        <label><input type="checkbox" class="block-color-check" value="#00ffff" /> Cyan</label>
-        <label><input type="checkbox" class="block-color-check" value="#0000ff" /> Blue</label>
-        <label><input type="checkbox" class="block-color-check" value="#ffff00" /> Yellow</label>
-        <label><input type="checkbox" class="block-color-check" value="#000000" /> Black</label>
-        <label><input type="checkbox" class="block-color-check" value="#ffffff" /> White</label>
+      <div class="control-row zoom-only">
+        <label for="zoom-slider">Zoom</label>
+        <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100" />
+        <span class="control-val" id="zoom-val">100%</span>
       </div>
-    </div>
-    <div class="control-row custom-only custom-full-width">
-      <label>Background</label>
-      <div class="color-checkboxes">
-        <label><input type="radio" name="bg-color" value="#ff0000" /> Red</label>
-        <label><input type="radio" name="bg-color" value="#00ffff" /> Cyan</label>
-        <label><input type="radio" name="bg-color" value="#0000ff" /> Blue</label>
-        <label><input type="radio" name="bg-color" value="#ffff00" /> Yellow</label>
-        <label><input type="radio" name="bg-color" value="#000000" checked /> Black</label>
-        <label><input type="radio" name="bg-color" value="#ffffff" /> White</label>
+    </section>
+
+    <!-- Transformation controls are grouped separately from view/color controls. -->
+    <section class="control-group transform-group" aria-label="Transformation controls">
+      <div class="control-row font-size-row">
+        <label for="font-size-slider">Font Size</label>
+        <input type="range" id="font-size-slider" min="8" max="24" step="1" value="12" />
+        <span class="control-val" id="font-size-val">12px</span>
       </div>
-    </div>
-    <div class="control-row custom-only custom-full-width">
-      <label>Row Density</label>
-      <input type="range" id="row-density-slider" min="10" max="100" step="5" value="50" />
-      <span class="control-val" id="row-density-val">50</span>
-      <div class="preset-btns">
-        <button class="preset-btn" data-preset="row-coarse">Coarse</button>
-        <button class="preset-btn" data-preset="row-medium">Medium</button>
-        <button class="preset-btn" data-preset="row-fine">Fine</button>
+      <div class="control-row spacer-only">
+        <label for="spacer-slider">Spacer Rows</label>
+        <input type="range" id="spacer-slider" min="0" max="5" step="1" value="0" />
+        <span class="control-val" id="spacer-val">0</span>
       </div>
-    </div>
-    <div class="control-row custom-only custom-full-width">
-      <label>Col Density</label>
-      <input type="range" id="col-density-slider" min="10" max="100" step="5" value="60" />
-      <span class="control-val" id="col-density-val">60</span>
-      <div class="preset-btns">
-        <button class="preset-btn" data-preset="col-coarse">Coarse</button>
-        <button class="preset-btn" data-preset="col-medium">Medium</button>
-        <button class="preset-btn" data-preset="col-fine">Fine</button>
+
+      <div class="control-row stipple-only transform-priority">
+        <label for="stipple-density-slider">Dot Detail / Count</label>
+        <input type="range" id="stipple-density-slider" min="6000" max="26000" step="500" value="16000" />
+        <span class="control-val" id="stipple-density-val">16000</span>
       </div>
-    </div>
-    <div class="control-row custom-only">
-      <label for="h-gap-slider">H Gap</label>
-      <input type="range" id="h-gap-slider" min="0" max="10" step="1" value="0" />
-      <span class="control-val" id="h-gap-val">0</span>
-    </div>
-    <div class="control-row custom-only">
-      <label>Orientation</label>
-      <div class="orientation-toggle">
-        <label><input type="radio" name="orientation" value="horizontal" checked /> Horizontal</label>
-        <label><input type="radio" name="orientation" value="vertical" /> Vertical</label>
+      <div class="control-row stipple-only transform-priority">
+        <label for="stipple-variant">Stipple Style</label>
+        <select id="stipple-variant">
+          <option value="classic" selected>Classic / Adaptive</option>
+          <option value="voronoi">Blue Noise / Poisson</option>
+          <option value="dithered">Dithered / Bayer</option>
+          <option value="structure">Structure / Contour</option>
+        </select>
       </div>
-    </div>
+      <div class="control-row stipple-only stipple-style-control" data-stipple-style="classic">
+        <label for="stipple-classic-relaxation" title="Fine-tunes weighted-CVD relaxation. 50 is neutral.">Relaxation</label>
+        <input type="range" id="stipple-classic-relaxation" min="0" max="100" step="1" value="50" />
+        <span class="control-val" id="stipple-classic-relaxation-val">50</span>
+      </div>
+      <div class="control-row stipple-only stipple-style-control" data-stipple-style="voronoi">
+        <label for="stipple-blue-spacing" title="Adjusts blue-noise exclusion spacing. RC93 browser-qualified default is 27.">Spacing</label>
+        <input type="range" id="stipple-blue-spacing" min="0" max="100" step="1" value="27" />
+        <span class="control-val" id="stipple-blue-spacing-val">27</span>
+      </div>
+      <div class="control-row stipple-only stipple-style-control" data-stipple-style="dithered">
+        <label for="stipple-dither-tone" title="Adjusts tonal separation. 50 is neutral.">Tone Contrast</label>
+        <input type="range" id="stipple-dither-tone" min="0" max="100" step="1" value="50" />
+        <span class="control-val" id="stipple-dither-tone-val">50</span>
+      </div>
+      <div class="control-row stipple-only stipple-style-control" data-stipple-style="structure">
+        <label for="stipple-structure-emphasis" title="Adjusts structural emphasis. 50 is neutral.">Structure Emphasis</label>
+        <input type="range" id="stipple-structure-emphasis" min="0" max="100" step="1" value="50" />
+        <span class="control-val" id="stipple-structure-emphasis-val">50</span>
+      </div>
+      <div class="control-row stipple-only">
+        <label for="stipple-size-slider">Dot Size</label>
+        <input type="range" id="stipple-size-slider" min="0.3" max="1.1" step="0.1" value="0.7" />
+        <span class="control-val" id="stipple-size-val">0.7</span>
+      </div>
+
+      <div class="control-row single-line-only transform-priority">
+        <label for="single-line-density-slider">Line Detail / Cities</label>
+        <input type="range" id="single-line-density-slider" min="4000" max="40000" step="1" value="22006" />
+        <span class="control-val" id="single-line-density-val">22006</span>
+      </div>
+      <div class="control-row single-line-only transform-priority">
+        <label for="single-line-variant">TSP Style</label>
+        <select id="single-line-variant">
+          <option value="classic" selected>Classic / Marilyn</option>
+          <option value="voronoi">Voronoi / Organic</option>
+          <option value="dithered">Dithered / Maze</option>
+          <option value="textured">Textured / Directional</option>
+        </select>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="classic">
+        <label for="tsp-classic-tone-support" title="Browser-qualified default 100, with extended headroom to 160.">Tone Support</label>
+        <input type="range" id="tsp-classic-tone-support" min="0" max="160" step="1" value="100" />
+        <span class="control-val" id="tsp-classic-tone-support-val">100</span>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="classic">
+        <label for="tsp-classic-feature-detail" title="Browser-qualified default 100, with extended headroom to 160.">Feature Detail</label>
+        <input type="range" id="tsp-classic-feature-detail" min="0" max="160" step="1" value="100" />
+        <span class="control-val" id="tsp-classic-feature-detail-val">100</span>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="voronoi">
+        <label for="tsp-voronoi-tone" title="Browser-qualified default 100, with extended headroom to 160.">Tone Contrast</label>
+        <input type="range" id="tsp-voronoi-tone" min="0" max="160" step="1" value="100" />
+        <span class="control-val" id="tsp-voronoi-tone-val">100</span>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="voronoi">
+        <label for="tsp-voronoi-smoothness" title="Browser-qualified default 100, with extended headroom to 160.">Smoothness</label>
+        <input type="range" id="tsp-voronoi-smoothness" min="0" max="160" step="1" value="100" />
+        <span class="control-val" id="tsp-voronoi-smoothness-val">100</span>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="dithered">
+        <label for="tsp-dither-tone" title="Adjusts tonal separation for Dithered. 50 is neutral.">Tone Contrast</label>
+        <input type="range" id="tsp-dither-tone" min="0" max="100" step="1" value="50" />
+        <span class="control-val" id="tsp-dither-tone-val">50</span>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="dithered">
+        <label for="tsp-dither-pattern" title="Changes how strongly the Bayer threshold shapes city placement. 50 is neutral.">Pattern Strength</label>
+        <input type="range" id="tsp-dither-pattern" min="0" max="100" step="1" value="50" />
+        <span class="control-val" id="tsp-dither-pattern-val">50</span>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="textured">
+        <label for="tsp-textured-direction" title="Controls tangent displacement and directional routing strength.">Direction Strength</label>
+        <input type="range" id="tsp-textured-direction" min="0" max="100" step="1" value="65" />
+        <span class="control-val" id="tsp-textured-direction-val">65</span>
+      </div>
+      <div class="control-row single-line-only tsp-style-control" data-tsp-style="textured">
+        <label for="tsp-textured-scale" title="Controls the spatial scale used to estimate local image flow.">Texture Scale</label>
+        <input type="range" id="tsp-textured-scale" min="0" max="100" step="1" value="50" />
+        <span class="control-val" id="tsp-textured-scale-val">50</span>
+      </div>
+      <div class="control-row single-line-only">
+        <label for="single-line-width-slider">Line Width</label>
+        <input type="range" id="single-line-width-slider" min="0.1" max="2.0" step="0.05" value="0.45" />
+        <span class="control-val" id="single-line-width-val">0.45</span>
+      </div>
+
+      <div class="control-row halftone-only">
+        <label for="halftone-size">Halftone Size</label>
+        <select id="halftone-size">
+          <option value="1">Micro</option><option value="2">Nano</option><option value="3">Tiny</option>
+          <option value="5">Very small</option><option value="7" selected>Small</option><option value="9">Average</option>
+          <option value="12">Big</option><option value="15">Very big</option><option value="20">Huge</option>
+          <option value="30">Massive</option><option value="40">Giant</option><option value="50">Colossal</option>
+        </select>
+      </div>
+      <div class="control-row halftone-only">
+        <label for="color-improvement">Color Improvement</label>
+        <select id="color-improvement">
+          <option value="0">None</option><option value="1">Strong</option><option value="2">Privilege bright</option>
+          <option value="3">Privilege dark</option><option value="4">Smart</option><option value="5">Smart channels</option>
+          <option value="6">Hot colors</option><option value="7">Smart hot</option><option value="8">Pastel</option>
+        </select>
+      </div>
+      <div class="control-row halftone-only">
+        <label for="improvement-level">Improvement Level</label>
+        <select id="improvement-level">
+          <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+          <option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+        </select>
+      </div>
+      <div class="control-row halftone-only">
+        <label for="overall-style">Overall Style</label>
+        <select id="overall-style"><option value="bright">Bright</option><option value="dark" selected>Dark</option></select>
+      </div>
+
+      <div class="control-row custom-only">
+        <label>Row Density</label>
+        <input type="range" id="row-density-slider" min="10" max="100" step="5" value="50" />
+        <span class="control-val" id="row-density-val">50</span>
+        <div class="preset-btns"><button class="preset-btn" data-preset="row-coarse">Coarse</button><button class="preset-btn" data-preset="row-medium">Medium</button><button class="preset-btn" data-preset="row-fine">Fine</button></div>
+      </div>
+      <div class="control-row custom-only">
+        <label>Col Density</label>
+        <input type="range" id="col-density-slider" min="10" max="100" step="5" value="60" />
+        <span class="control-val" id="col-density-val">60</span>
+        <div class="preset-btns"><button class="preset-btn" data-preset="col-coarse">Coarse</button><button class="preset-btn" data-preset="col-medium">Medium</button><button class="preset-btn" data-preset="col-fine">Fine</button></div>
+      </div>
+      <div class="control-row custom-only">
+        <label for="h-gap-slider">H Gap</label>
+        <input type="range" id="h-gap-slider" min="0" max="10" step="1" value="0" />
+        <span class="control-val" id="h-gap-val">0</span>
+      </div>
+      <div class="control-row custom-only">
+        <label>Orientation</label>
+        <div class="orientation-toggle"><label><input type="radio" name="orientation" value="horizontal" checked /> Horizontal</label><label><input type="radio" name="orientation" value="vertical" /> Vertical</label></div>
+      </div>
+    </section>
+
+    <!-- Color choices stay at the bottom and with their peers. -->
+    <section class="control-group color-group" aria-label="Color controls">
+      <div class="control-row stipple-only color-control">
+        <label for="stipple-color-picker">Dot Color</label><input type="color" id="stipple-color-picker" value="#000000" /><span class="control-val color-value" id="stipple-color-val">#000000</span>
+      </div>
+      <div class="control-row stipple-only color-control">
+        <label for="stipple-bg-color-picker">BG Color</label><input type="color" id="stipple-bg-color-picker" value="#ffffff" /><span class="control-val color-value" id="stipple-bg-color-val">#ffffff</span>
+      </div>
+      <div class="control-row single-line-only color-control">
+        <label for="single-line-color-picker">Pen Color</label><input type="color" id="single-line-color-picker" value="#000000" /><span class="control-val color-value" id="single-line-color-val">#000000</span>
+      </div>
+      <div class="control-row single-line-only color-control">
+        <label for="single-line-bg-color-picker">BG Color</label><input type="color" id="single-line-bg-color-picker" value="#ffffff" /><span class="control-val color-value" id="single-line-bg-color-val">#ffffff</span>
+      </div>
+
+      <div class="control-row halftone-only palette-control">
+        <label>Halftone Color</label>
+        <div class="color-checkboxes">
+          <label><input type="checkbox" id="use-image-colors" /> Image</label>
+          <label><input type="checkbox" class="halftone-color-check" value="#ff0000" /> Red</label>
+          <label><input type="checkbox" class="halftone-color-check" value="#00ffff" /> Cyan</label>
+          <label><input type="checkbox" class="halftone-color-check" value="#0000ff" /> Blue</label>
+          <label><input type="checkbox" class="halftone-color-check" value="#ffff00" /> Yellow</label>
+          <label><input type="checkbox" class="halftone-color-check" value="#000000" checked /> Black</label>
+          <label><input type="checkbox" class="halftone-color-check" value="#ffffff" /> White</label>
+          <input type="color" id="halftone-color-picker" value="#000000" />
+        </div>
+      </div>
+      <div class="control-row halftone-only palette-control">
+        <label>Back Color</label>
+        <div class="color-checkboxes">
+          <label><input type="radio" name="halftone-bg-color" value="#ff0000" /> Red</label>
+          <label><input type="radio" name="halftone-bg-color" value="#00ffff" /> Cyan</label>
+          <label><input type="radio" name="halftone-bg-color" value="#0000ff" /> Blue</label>
+          <label><input type="radio" name="halftone-bg-color" value="#ffff00" /> Yellow</label>
+          <label><input type="radio" name="halftone-bg-color" value="#000000" /> Black</label>
+          <label><input type="radio" name="halftone-bg-color" value="#ffffff" checked /> White</label>
+          <input type="color" id="halftone-bg-color-picker" value="#ffffff" />
+        </div>
+      </div>
+
+      <div class="control-row custom-only palette-control">
+        <label>Block Colors</label>
+        <div class="color-checkboxes">
+          <label><input type="checkbox" class="block-color-check" value="#ff0000" checked /> Red</label><label><input type="checkbox" class="block-color-check" value="#00ffff" /> Cyan</label>
+          <label><input type="checkbox" class="block-color-check" value="#0000ff" /> Blue</label><label><input type="checkbox" class="block-color-check" value="#ffff00" /> Yellow</label>
+          <label><input type="checkbox" class="block-color-check" value="#000000" /> Black</label><label><input type="checkbox" class="block-color-check" value="#ffffff" /> White</label>
+        </div>
+      </div>
+      <div class="control-row custom-only palette-control">
+        <label>Background</label>
+        <div class="color-checkboxes">
+          <label><input type="radio" name="bg-color" value="#ff0000" /> Red</label><label><input type="radio" name="bg-color" value="#00ffff" /> Cyan</label>
+          <label><input type="radio" name="bg-color" value="#0000ff" /> Blue</label><label><input type="radio" name="bg-color" value="#ffff00" /> Yellow</label>
+          <label><input type="radio" name="bg-color" value="#000000" checked /> Black</label><label><input type="radio" name="bg-color" value="#ffffff" /> White</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hidden state mirrors retained for compatibility; visible singletons are buttons. -->
+    <input type="checkbox" id="inverse-image" hidden />
+    <input type="checkbox" id="transparent-png" hidden />
 
     <div id="save-row">
-      <!-- Left zone -->
-      <div class="btn-zone btn-zone--left">
-        <button id="btn-reset" title="Reset all controls to defaults">Reset</button>
-      </div>
-
-      <!-- Centre zone -->
-      <div class="btn-zone btn-zone--centre">
+      <div class="btn-zone btn-zone--left"><button id="btn-reset" title="Reset this mode/style to its calibrated default">Reset</button></div>
+      <div class="btn-zone btn-zone--centre utility-zone">
         <button id="btn-invert" title="Invert BW tones">Invert</button>
         <button id="btn-bg" title="Toggle background colour">BG: Black</button>
+        <button id="btn-negative" class="state-btn" aria-pressed="false" title="Reverse image tones">Negative</button>
+        <button id="btn-transparent" class="state-btn halftone-state-btn" aria-pressed="false" title="Make saved PNG background transparent">Transparent PNG</button>
       </div>
-
-      <!-- Right zone -->
       <div class="btn-zone btn-zone--right">
-        <button id="btn-copy">Copy</button>
-        <button id="btn-txt">Save .txt</button>
-        <button id="btn-html">Save .html</button>
-        <button id="btn-png">Save .png</button>
+        <button id="btn-copy">Copy</button><button id="btn-txt">Save .txt</button><button id="btn-html">Save .html</button><button id="btn-png">Save .png</button>
       </div>
     </div>
   </div>

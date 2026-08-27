@@ -123,7 +123,10 @@
     overlay.classList.add('textify-loading');
     label.textContent = 'Processing…';
 
-    // Use natural dimensions; fall back to rendered size
+    // Preserve both natural processing size and the browser-rendered reference size.
+    const sourceRect = img.getBoundingClientRect();
+    const renderedWidth = Math.max(1, Math.round(sourceRect.width));
+    const renderedHeight = Math.max(1, Math.round(sourceRect.height));
     let srcWidth  = img.naturalWidth  || img.width;
     let srcHeight = img.naturalHeight || img.height;
 
@@ -175,7 +178,7 @@
       showToast(`Image scaled down to ${srcWidth}×${srcHeight}px for processing.`);
     }
 
-    const payload = { dataURL, width: srcWidth, height: srcHeight };
+    const payload = { dataURL, width: srcWidth, height: srcHeight, renderedWidth, renderedHeight };
 
     chrome.storage.local.set({ textify_payload: payload }, () => {
       if (chrome.runtime.lastError) {
